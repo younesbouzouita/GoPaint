@@ -129,10 +129,11 @@ img{max-width:100%;display:block;}
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-.topbar-inner{
-  max-width:1180px; margin:0 auto; padding:14px 20px;
-  display:flex; align-items:center; gap:18px;
+.topbar-row1{
+  max-width:1180px; margin:0 auto; padding:14px 20px 10px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
 }
+.topbar-row2{ max-width:1180px; margin:0 auto; padding:0 20px 12px; }
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; white-space:nowrap;}
 .brand-mark{
   width:38px;height:38px;border-radius:11px;background:var(--grad);
@@ -144,11 +145,11 @@ img{max-width:100%;display:block;}
   50%{ box-shadow:0 6px 16px -6px rgba(60,40,120,.4), 0 0 0 6px rgba(255,77,166,0); }
 }
 .brand-name span{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
-.tabs{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:14px; flex:1; overflow-x:auto;}
+.tabs{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:14px; width:100%; overflow-x:auto;}
 .tab-btn{
-  border:none; background:transparent; padding:9px 16px; border-radius:11px;
+  border:none; background:transparent; padding:9px 12px; border-radius:11px;
   font-weight:700; color:var(--ink-soft); cursor:pointer; font-size:14.5px; white-space:nowrap;
-  transition:.18s;
+  transition:.18s; flex:1; text-align:center;
 }
 .tab-btn.active{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
 .top-actions{display:flex; align-items:center; gap:10px; flex:none;}
@@ -252,6 +253,11 @@ img{max-width:100%;display:block;}
 .post{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
 .post-head{display:flex; align-items:center; gap:10px; padding:14px 16px 10px;}
 .post-avatar{width:38px;height:38px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;}
+.follow-btn{
+  border:1px solid var(--purple); background:transparent; color:var(--purple); font-weight:700; font-size:12px;
+  padding:6px 14px; border-radius:999px; cursor:pointer; flex:none; transition:.18s;
+}
+.follow-btn.following{ background:var(--surface-2); color:var(--ink-soft); border-color:var(--line); }
 .post-user{font-weight:700; font-size:14px;}
 .post-type{font-size:12px; color:var(--ink-faint);}
 .post-media{width:100%; max-height:480px; object-fit:cover; background:var(--surface-2);}
@@ -294,6 +300,10 @@ img{max-width:100%;display:block;}
 .modal.wide{max-width:600px;}
 .modal h3{margin:0 0 4px; font-size:20px;}
 .modal .sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;}
+.stat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 16px;}
+.stat-cell{background:var(--surface-2); border-radius:12px; padding:12px 6px; text-align:center;}
+.stat-cell b{display:block; font-size:17px; font-family:'Baloo 2'; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.stat-cell span{font-size:11.5px; color:var(--ink-soft); font-weight:600;}
 .field{margin-bottom:14px;}
 .field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--ink-soft);}
 .field input,.field select,.field textarea{
@@ -321,8 +331,7 @@ img{max-width:100%;display:block;}
 .toast.show{opacity:1; transform:translateY(0) scale(1);}
 footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px 20px; border-top:1px solid var(--line); margin-top:20px;}
 @media(max-width:720px){
-  .topbar-inner{flex-wrap:wrap;}
-  .tabs{order:3; width:100%;}
+  .hero{padding:26px 20px;}
 }
 </style>
 </head>
@@ -330,7 +339,7 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
 
 <div id="splash">
   <div class="splash-ring"><i class="ph-fill ph-palette"></i></div>
-  <div class="splash-title">GO Paint!</div>
+  <div class="splash-title">GO Paint</div>
   <div class="splash-sub">Drawing accessories</div>
   <div class="splash-dots">
     <span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span>
@@ -338,19 +347,21 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
 </div>
 
 <div class="topbar">
-  <div class="topbar-inner">
+  <div class="topbar-row1">
     <div class="brand">
       <div class="brand-mark"><i class="ph-fill ph-palette"></i></div>
-      <div class="brand-name">GO <span>Paint!</span></div>
+      <div class="brand-name">GO <span>Paint</span></div>
     </div>
+    <div class="top-actions" id="authArea">
+      <button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>
+    </div>
+  </div>
+  <div class="topbar-row2">
     <div class="tabs" id="tabs">
       <button class="tab-btn active" data-tab="brush">الفرش</button>
       <button class="tab-btn" data-tab="palette">الألوان</button>
       <button class="tab-btn" data-tab="reference">المراجع</button>
       <button class="tab-btn" data-tab="community">المجتمع</button>
-    </div>
-    <div class="top-actions" id="authArea">
-      <button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>
     </div>
   </div>
 </div>
@@ -372,7 +383,7 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
   <div id="content" style="margin-top:18px;"></div>
 </div>
 
-<footer>GO Paint! : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.</footer>
+<footer>GO Paint : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.</footer>
 
 <button class="fab" id="fabAdd" title="أضف محتوى"><i class="ph-bold ph-plus"></i></button>
 
@@ -416,6 +427,11 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
     <button class="modal-close" data-close="accountOverlay"><i class="ph ph-x"></i></button>
     <h3 id="accName">-</h3>
     <p class="sub" id="accRole">-</p>
+    <div class="stat-grid" id="accStats">
+      <div class="stat-cell"><b>-</b><span>متابعون</span></div>
+      <div class="stat-cell"><b>-</b><span>إعجابات</span></div>
+      <div class="stat-cell"><b>-</b><span>تنزيلات</span></div>
+    </div>
     <button class="btn btn-ghost" style="width:100%; margin-bottom:10px;" id="myPostsBtn">منشوراتي</button>
     <button class="btn btn-ghost" style="width:100%" id="logoutBtn">تسجيل الخروج</button>
   </div>
@@ -487,7 +503,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null, currentProfile = null;
 let activeTab = 'brush';
 let items = [];
-let myLikes = new Set(), mySaves = new Set();
+let myLikes = new Set(), mySaves = new Set(), myFollowing = new Set();
 let allTags = new Set();
 let activeTagFilter = null;
 let authMode = 'login';
@@ -532,10 +548,21 @@ function renderAuthArea(){
   if(currentUser && currentProfile){
     const isAdmin = currentProfile.role==='admin';
     el.innerHTML = `<button class="avatar-btn" id="avatarBtn">${(currentProfile.username||'U')[0].toUpperCase()}${isAdmin?`<span class="avatar-badge">${verifiedBadge()}</span>`:''}</button>`;
-    $('#avatarBtn').addEventListener('click', ()=>{
+    $('#avatarBtn').addEventListener('click', async ()=>{
       $('#accName').innerHTML = escapeHtml(currentProfile.display_name || currentProfile.username) + (isAdmin?verifiedBadge():'');
       $('#accRole').textContent = currentProfile.role==='admin' ? 'مسؤول' : (currentProfile.role==='artist'?'فنان':'مستخدم');
       openModal('accountOverlay');
+      const grid = $('#accStats');
+      grid.innerHTML = `
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>متابعون</span></div>
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>إعجابات</span></div>
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>تنزيلات</span></div>`;
+      const { data, error } = await sb.rpc('profile_stats', { uid: currentUser.id });
+      const s = (!error && data && data[0]) ? data[0] : { followers:0, total_likes:0, total_downloads:0 };
+      grid.innerHTML = `
+        <div class="stat-cell"><b>${s.followers}</b><span>متابعون</span></div>
+        <div class="stat-cell"><b>${s.total_likes}</b><span>إعجابات</span></div>
+        <div class="stat-cell"><b>${s.total_downloads}</b><span>تنزيلات</span></div>`;
     });
   } else {
     el.innerHTML = `<button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>`;
@@ -641,11 +668,13 @@ async function loadItems(mineOnly){
   renderItems();
 }
 async function loadMyReactions(){
-  if(!currentUser){ myLikes=new Set(); mySaves=new Set(); renderItems(); return; }
+  if(!currentUser){ myLikes=new Set(); mySaves=new Set(); myFollowing=new Set(); renderItems(); return; }
   const { data: likes } = await sb.from('likes').select('content_id').eq('user_id', currentUser.id);
   const { data: saves } = await sb.from('saves').select('content_id').eq('user_id', currentUser.id);
+  const { data: follows } = await sb.from('follows').select('followed_id').eq('follower_id', currentUser.id);
   myLikes = new Set((likes||[]).map(l=>l.content_id));
   mySaves = new Set((saves||[]).map(s=>s.content_id));
+  myFollowing = new Set((follows||[]).map(f=>f.followed_id));
   renderItems();
 }
 function renderTagScroll(){
@@ -722,11 +751,14 @@ function postCard(it){
   const liked = myLikes.has(it.id), saved = mySaves.has(it.id);
   const uname = it.artist ? it.artist.username : 'GO Paint';
   const isAdmin = it.artist && it.artist.role==='admin';
+  const isMine = currentUser && it.artist_id === currentUser.id;
+  const following = myFollowing.has(it.artist_id);
   return `
   <div class="post" data-id="${it.id}">
     <div class="post-head">
       <div class="post-avatar">${uname[0].toUpperCase()}</div>
-      <div><div class="post-user">${escapeHtml(uname)}${isAdmin?verifiedBadge():''}</div><div class="post-type">${typeLabel(it.type)} ${it.subcategory?('· '+it.subcategory):''}</div></div>
+      <div style="flex:1;"><div class="post-user">${escapeHtml(uname)}${isAdmin?verifiedBadge():''}</div><div class="post-type">${typeLabel(it.type)} ${it.subcategory?('· '+it.subcategory):''}</div></div>
+      ${(!isMine && it.artist_id) ? `<button class="follow-btn ${following?'following':''}" data-artist="${it.artist_id}">${following?'متابَع':'متابعة'}</button>` : ''}
     </div>
     ${it.image_url ? `<img class="post-media" data-id="${it.id}" src="${it.image_url}" loading="lazy" style="cursor:pointer;">` : ''}
     <div class="post-body">
@@ -762,6 +794,20 @@ function wirePost(it){
   wireCard(it);
   const t = document.querySelector(`.comment-toggle[data-id="${it.id}"]`);
   if(t) t.addEventListener('click', ()=> toggleComments(it.id));
+  const f = document.querySelector(`.post[data-id="${it.id}"] .follow-btn`);
+  if(f) f.addEventListener('click', ()=> toggleFollow(f.dataset.artist));
+}
+async function toggleFollow(artistId){
+  if(!currentUser){ openModal('authOverlay'); return; }
+  if(myFollowing.has(artistId)){
+    await sb.from('follows').delete().eq('follower_id', currentUser.id).eq('followed_id', artistId);
+    myFollowing.delete(artistId);
+  } else {
+    await sb.from('follows').insert({ follower_id: currentUser.id, followed_id: artistId });
+    myFollowing.add(artistId);
+    toast('تمت المتابعة');
+  }
+  renderItems();
 }
 function showMediaModal(it){
   $('#mediaModalTitle').textContent = it.title;
@@ -770,6 +816,7 @@ function showMediaModal(it){
   const dl = $('#mediaDownloadBtn');
   dl.href = it.image_url || '#';
   dl.download = (it.title||'gopaint') + '.jpg';
+  dl.onclick = ()=>{ sb.rpc('increment_downloads', { item_id: it.id }).then(()=>{ it.downloads_count = (it.downloads_count||0)+1; }); };
   openModal('mediaOverlay');
 }
 function shareItem(it){

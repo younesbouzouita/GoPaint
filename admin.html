@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GO Paint! — لوحة التحكم</title>
+<title>GO Paint — لوحة التحكم</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 :root{
   --bg:#15131F; --surface:#1E1B2E; --surface-2:#282440; --ink:#F4F2FB; --ink-soft:#B4AFC9; --line:#332E4C;
@@ -17,21 +18,26 @@
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Tajawal',sans-serif;}
 h1,h2,h3{font-family:'Baloo 2',sans-serif;}
 .wrap{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
-.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
-.brand{font-weight:800;font-size:20px;}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;gap:10px;flex-wrap:wrap;}
+.brand{font-weight:800;font-size:20px;display:flex;align-items:center;gap:9px;}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;}
 .brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.btn{border:none;cursor:pointer;font-weight:700;border-radius:10px;padding:9px 15px;font-size:13.5px;font-family:inherit;}
+.btn{border:none;cursor:pointer;font-weight:700;border-radius:10px;padding:9px 15px;font-size:13.5px;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary{background:var(--grad);color:#fff;}
 .btn-ghost{background:var(--surface-2);color:var(--ink);}
 .btn-ok{background:var(--ok);color:#0a2617;}
 .btn-bad{background:var(--bad);color:#2a0510;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.stat-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;}
+.stat-box b{display:block;font-size:22px;font-family:'Baloo 2';background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.stat-box span{font-size:11.5px;color:var(--ink-soft);font-weight:600;}
 .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
-.tabs button{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13.5px;}
+.tabs button{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;}
 .tabs button.active{background:var(--grad);color:#fff;border-color:transparent;}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;}
 .row{display:flex;gap:14px;align-items:flex-start;}
-.thumb{width:70px;height:70px;border-radius:10px;object-fit:cover;background:var(--surface-2);flex:none;}
-.meta{flex:1;}
+.thumb{width:88px;height:88px;border-radius:12px;object-fit:cover;background:var(--surface-2);flex:none;cursor:pointer;}
+.meta{flex:1;min-width:0;}
 .meta b{font-size:15px;}
 .meta .sub{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
 .tagx{display:inline-block;background:var(--surface-2);color:var(--ink-soft);font-size:11px;padding:2px 8px;border-radius:999px;margin-left:4px;}
@@ -44,9 +50,13 @@ h1,h2,h3{font-family:'Baloo 2',sans-serif;}
 .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:5px;font-weight:700;}
 .field input,.field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--ink);font-family:inherit;font-size:14px;}
 .login-box{max-width:380px;margin:80px auto;background:var(--surface);padding:28px;border-radius:18px;border:1px solid var(--line);}
-.msg{font-size:13px;padding:9px 12px;border-radius:9px;margin-bottom:10px;}
+.msg{font-size:13px;padding:9px 12px;border-radius:9px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
 .msg.err{background:#3a1220;color:var(--bad);}
 .msg.ok{background:#123a24;color:var(--ok);}
+.empty{padding:34px 16px;text-align:center;color:var(--ink-soft);}
+.empty i{font-size:28px;display:block;margin-bottom:8px;opacity:.6;}
+.spin{display:inline-block;width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
 #appArea{display:none;}
 </style>
 </head>
@@ -54,25 +64,30 @@ h1,h2,h3{font-family:'Baloo 2',sans-serif;}
 
 <div class="wrap" id="loginArea">
   <div class="login-box">
-    <h3 class="brand">GO Paint! <span>Admin</span></h3>
+    <h3 class="brand"><span class="brand-mark"><i class="ph-fill ph-palette"></i></span>GO Paint <span>Admin</span></h3>
     <p style="color:var(--ink-soft);font-size:13.5px;">هذه اللوحة مخصصة للمسؤولين فقط.</p>
     <div id="loginMsg"></div>
     <div class="field"><label>البريد الإلكتروني</label><input id="lEmail" type="email"></div>
     <div class="field"><label>كلمة السر</label><input id="lPass" type="password"></div>
-    <button class="btn btn-primary" style="width:100%" id="loginBtn">دخول</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" id="loginBtn">دخول</button>
   </div>
 </div>
 
 <div class="wrap" id="appArea">
   <div class="head">
-    <div class="brand">GO Paint! <span>Admin</span></div>
-    <button class="btn btn-ghost" id="logoutBtn">تسجيل الخروج</button>
+    <div class="brand"><span class="brand-mark"><i class="ph-fill ph-palette"></i></span>GO Paint <span>Admin</span></div>
+    <button class="btn btn-ghost" id="logoutBtn"><i class="ph ph-sign-out"></i> تسجيل الخروج</button>
+  </div>
+  <div class="stats-row" id="statsRow">
+    <div class="stat-box"><b>-</b><span>قيد المراجعة</span></div>
+    <div class="stat-box"><b>-</b><span>إجمالي المحتوى</span></div>
+    <div class="stat-box"><b>-</b><span>المستخدمون</span></div>
   </div>
   <div class="tabs">
-    <button data-t="pending" class="active">قيد المراجعة</button>
-    <button data-t="all">كل المحتوى</button>
-    <button data-t="users">المستخدمون</button>
-    <button data-t="add">إضافة مباشرة</button>
+    <button data-t="pending" class="active"><i class="ph ph-hourglass-medium"></i> قيد المراجعة</button>
+    <button data-t="all"><i class="ph ph-squares-four"></i> كل المحتوى</button>
+    <button data-t="users"><i class="ph ph-users-three"></i> المستخدمون</button>
+    <button data-t="add"><i class="ph ph-plus-circle"></i> إضافة مباشرة</button>
   </div>
   <div id="panel"></div>
 </div>
@@ -89,22 +104,23 @@ async function checkSession(){
   const { data:{session} } = await sb.auth.getSession();
   if(!session){ showLogin(); return; }
   me = session.user;
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', me.id).maybeSingle();
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', me.id).maybeSingle();
   meProfile = profile;
+  if(error){ $('#loginMsg').innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(error.message)}</div>`; showLogin(); return; }
   if(!profile || profile.role!=='admin'){
-    $('#loginMsg').innerHTML = '<div class="msg err">هذا الحساب ليس لديه صلاحيات إدارية.</div>';
+    $('#loginMsg').innerHTML = '<div class="msg err"><i class="ph ph-warning-circle"></i> هذا الحساب ليس لديه صلاحيات إدارية.</div>';
     await sb.auth.signOut();
     showLogin(); return;
   }
   showApp();
 }
 function showLogin(){ $('#loginArea').style.display='block'; $('#appArea').style.display='none'; }
-function showApp(){ $('#loginArea').style.display='none'; $('#appArea').style.display='block'; renderTab(); }
+function showApp(){ $('#loginArea').style.display='none'; $('#appArea').style.display='block'; loadStats(); renderTab(); }
 
 $('#loginBtn').addEventListener('click', async ()=>{
   const email=$('#lEmail').value.trim(), password=$('#lPass').value;
   const { error } = await sb.auth.signInWithPassword({ email, password });
-  if(error){ $('#loginMsg').innerHTML = `<div class="msg err">${error.message}</div>`; return; }
+  if(error){ $('#loginMsg').innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(error.message)}</div>`; return; }
   await checkSession();
 });
 $('#logoutBtn').addEventListener('click', async ()=>{ await sb.auth.signOut(); location.reload(); });
@@ -114,17 +130,36 @@ document.querySelectorAll('.tabs button').forEach(b=> b.addEventListener('click'
   tab = b.dataset.t; renderTab();
 }));
 
+async function loadStats(){
+  const grid = $('#statsRow');
+  const [{ count: pending }, { count: totalContent }, { count: totalUsers }] = await Promise.all([
+    sb.from('content_items').select('*', { count:'exact', head:true }).eq('status','pending'),
+    sb.from('content_items').select('*', { count:'exact', head:true }),
+    sb.from('profiles').select('*', { count:'exact', head:true })
+  ]);
+  grid.innerHTML = `
+    <div class="stat-box"><b>${pending ?? 0}</b><span>قيد المراجعة</span></div>
+    <div class="stat-box"><b>${totalContent ?? 0}</b><span>إجمالي المحتوى</span></div>
+    <div class="stat-box"><b>${totalUsers ?? 0}</b><span>المستخدمون</span></div>`;
+}
+
 async function renderTab(){
   const panel = $('#panel');
+  panel.innerHTML = `<div class="empty"><span class="spin"></span></div>`;
   if(tab==='pending' || tab==='all'){
     let q = sb.from('content_items').select('*, artist:profiles(username)').order('created_at',{ascending:false});
     if(tab==='pending') q = q.eq('status','pending');
-    const { data } = await q;
-    panel.innerHTML = (data&&data.length) ? data.map(itemRow).join('') : `<div class="card">لا يوجد شيء هنا حالياً.</div>`;
+    const { data, error } = await q;
+    if(error){
+      panel.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> فشل التحميل: ${esc(error.message)}</div>`;
+      return;
+    }
+    panel.innerHTML = (data&&data.length) ? data.map(itemRow).join('') : `<div class="empty"><i class="ph ph-tray"></i>لا يوجد شيء هنا حالياً.</div>`;
     data && data.forEach(it=> wireRow(it));
   } else if(tab==='users'){
-    const { data } = await sb.from('profiles').select('*').order('created_at',{ascending:false});
-    panel.innerHTML = (data||[]).map(userRow).join('');
+    const { data, error } = await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    if(error){ panel.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(error.message)}</div>`; return; }
+    panel.innerHTML = (data||[]).map(userRow).join('') || `<div class="empty"><i class="ph ph-users-three"></i>لا يوجد مستخدمون بعد.</div>`;
     (data||[]).forEach(u=> {
       const btn = document.getElementById('ban-'+u.id);
       if(btn) btn.addEventListener('click', ()=> toggleBan(u));
@@ -139,15 +174,15 @@ function itemRow(it){
   const uname = it.artist ? it.artist.username : '—';
   return `<div class="card" id="row-${it.id}">
     <div class="row">
-      ${it.image_url?`<img class="thumb" src="${it.image_url}">`:''}
+      ${it.image_url?`<img class="thumb" src="${it.image_url}" onclick="window.open('${it.image_url}','_blank')">`:''}
       <div class="meta">
         <b>${esc(it.title)}</b> <span class="badge ${it.status}">${it.status}</span>
-        <div class="sub">النوع: ${it.type} ${it.subcategory?('· '+it.subcategory):''} — بواسطة ${esc(uname)}</div>
+        <div class="sub">النوع: ${esc(it.type)} ${it.subcategory?('· '+esc(it.subcategory)):''} — بواسطة ${esc(uname)}</div>
         <div style="margin-top:4px;">${(it.tags||[]).map(t=>`<span class="tagx">${esc(t)}</span>`).join('')}</div>
         <div class="actions">
-          ${it.status!=='approved'?`<button class="btn btn-ok" data-act="approve" data-id="${it.id}">قبول</button>`:''}
-          ${it.status!=='rejected'?`<button class="btn btn-bad" data-act="reject" data-id="${it.id}">رفض</button>`:''}
-          <button class="btn btn-ghost" data-act="delete" data-id="${it.id}">حذف</button>
+          ${it.status!=='approved'?`<button class="btn btn-ok" data-act="approve" data-id="${it.id}"><i class="ph-fill ph-check-circle"></i> قبول</button>`:''}
+          ${it.status!=='rejected'?`<button class="btn btn-bad" data-act="reject" data-id="${it.id}"><i class="ph ph-x-circle"></i> رفض</button>`:''}
+          <button class="btn btn-ghost" data-act="delete" data-id="${it.id}"><i class="ph ph-trash"></i> حذف</button>
         </div>
       </div>
     </div>
@@ -157,29 +192,32 @@ function wireRow(it){
   const row = document.getElementById('row-'+it.id); if(!row) return;
   row.querySelectorAll('button[data-act]').forEach(b=> b.addEventListener('click', async ()=>{
     const act = b.dataset.act;
-    if(act==='approve') await sb.from('content_items').update({status:'approved'}).eq('id', it.id);
+    let error = null;
+    if(act==='approve') ({ error } = await sb.from('content_items').update({status:'approved'}).eq('id', it.id));
     if(act==='reject'){
       const reason = prompt('سبب الرفض (اختياري):') || null;
-      await sb.from('content_items').update({status:'rejected', rejection_reason:reason}).eq('id', it.id);
+      ({ error } = await sb.from('content_items').update({status:'rejected', rejection_reason:reason}).eq('id', it.id));
     }
-    if(act==='delete'){ if(!confirm('تأكيد الحذف؟')) return; await sb.from('content_items').delete().eq('id', it.id); }
-    renderTab();
+    if(act==='delete'){ if(!confirm('تأكيد الحذف؟')) return; ({ error } = await sb.from('content_items').delete().eq('id', it.id)); }
+    if(error){ alert(error.message); return; }
+    loadStats(); renderTab();
   }));
 }
 function userRow(u){
   return `<div class="card">
     <div class="row">
       <div class="meta">
-        <b>${esc(u.username)}</b> <span class="badge ${u.is_banned?'rejected':'approved'}">${u.is_banned?'محظور':'نشط'}</span> — دور: ${u.role}
+        <b>${esc(u.username)}</b> <span class="badge ${u.is_banned?'rejected':'approved'}">${u.is_banned?'محظور':'نشط'}</span> — دور: ${esc(u.role)}
         <div class="actions">
-          <button class="btn ${u.is_banned?'btn-ok':'btn-bad'}" id="ban-${u.id}">${u.is_banned?'إلغاء الحظر':'حظر'}</button>
+          <button class="btn ${u.is_banned?'btn-ok':'btn-bad'}" id="ban-${u.id}"><i class="ph ${u.is_banned?'ph-check-circle':'ph-prohibit'}"></i> ${u.is_banned?'إلغاء الحظر':'حظر'}</button>
         </div>
       </div>
     </div>
   </div>`;
 }
 async function toggleBan(u){
-  await sb.from('profiles').update({ is_banned: !u.is_banned }).eq('id', u.id);
+  const { error } = await sb.from('profiles').update({ is_banned: !u.is_banned }).eq('id', u.id);
+  if(error){ alert(error.message); return; }
   renderTab();
 }
 function addForm(){
@@ -193,20 +231,20 @@ function addForm(){
     <div class="field"><label>المصدر</label><input id="aSource" placeholder="Pinterest"></div>
     <div class="field"><label>وسوم (فاصلة)</label><input id="aTags"></div>
     <div id="addMsg"></div>
-    <button class="btn btn-primary" id="aSubmit">نشر مباشرة</button>
+    <button class="btn btn-primary" id="aSubmit"><i class="ph ph-upload-simple"></i> نشر مباشرة</button>
   </div>`;
 }
 function wireAddForm(){
   $('#aSubmit').addEventListener('click', async ()=>{
     const msg = $('#addMsg'); msg.innerHTML='';
     const title = $('#aTitle').value.trim();
-    if(!title){ msg.innerHTML = '<div class="msg err">أدخل عنواناً</div>'; return; }
+    if(!title){ msg.innerHTML = '<div class="msg err"><i class="ph ph-warning-circle"></i> أدخل عنواناً</div>'; return; }
     let image_url = null;
     const file = $('#aImage').files[0];
     if(file){
       const path = `admin/${Date.now()}-${file.name}`;
       const { error: upErr } = await sb.storage.from('content-media').upload(path, file);
-      if(upErr){ msg.innerHTML = `<div class="msg err">${upErr.message}</div>`; return; }
+      if(upErr){ msg.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(upErr.message)}</div>`; return; }
       image_url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
     }
     const payload = {
@@ -217,9 +255,9 @@ function wireAddForm(){
       status: 'approved'
     };
     const { error } = await sb.from('content_items').insert(payload);
-    if(error){ msg.innerHTML = `<div class="msg err">${error.message}</div>`; return; }
-    msg.innerHTML = '<div class="msg ok">تم النشر مباشرة!</div>';
-    setTimeout(()=>renderTab(), 900);
+    if(error){ msg.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(error.message)}</div>`; return; }
+    msg.innerHTML = '<div class="msg ok"><i class="ph-fill ph-check-circle"></i> تم النشر مباشرة!</div>';
+    setTimeout(()=>{ loadStats(); renderTab(); }, 900);
   });
 }
 
