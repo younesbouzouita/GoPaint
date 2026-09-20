@@ -656,7 +656,7 @@ function renderSkeleton(){
 async function loadItems(mineOnly){
   renderSkeleton();
   const type = activeTab==='community' ? null : activeTab;
-  let q = sb.from('content_items').select('*, artist:profiles(username, role)').order('created_at', {ascending:false});
+  let q = sb.from('content_items').select('*, artist:profiles!content_items_artist_id_fkey(username, role)').order('created_at', {ascending:false});
   if(type) q = q.eq('type', type);
   if(mineOnly && currentUser) q = q.eq('artist_id', currentUser.id);
   else q = q.eq('status','approved');

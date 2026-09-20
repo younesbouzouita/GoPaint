@@ -147,7 +147,7 @@ async function renderTab(){
   const panel = $('#panel');
   panel.innerHTML = `<div class="empty"><span class="spin"></span></div>`;
   if(tab==='pending' || tab==='all'){
-    let q = sb.from('content_items').select('*, artist:profiles(username)').order('created_at',{ascending:false});
+    let q = sb.from('content_items').select('*, artist:profiles!content_items_artist_id_fkey(username)').order('created_at',{ascending:false});
     if(tab==='pending') q = q.eq('status','pending');
     const { data, error } = await q;
     if(error){
