@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GO Paint! : Drawing accessories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#FAFAFF;
+  --surface:#FFFFFF;
+  --surface-2:#F2F0FB;
+  --ink:#1D1A2E;
+  --ink-soft:#615C78;
+  --ink-faint:#9A96AE;
+  --line:#E7E4F5;
+  --blue:#3D6CFF;
+  --purple:#9B4DFF;
+  --pink:#FF4DA6;
+  --grad: linear-gradient(115deg, var(--blue), var(--purple) 55%, var(--pink));
+  --radius:20px;
+  --radius-sm:12px;
+  --shadow: 0 10px 30px -12px rgba(60,40,120,.18);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Tajawal','Inter',sans-serif;
+  min-height:100vh;
+}
+
+/* ---------- motion system ---------- */
+@keyframes blobFloat{
+  0%,100%{ transform:translate(0,0) scale(1); }
+  33%{ transform:translate(3%,-4%) scale(1.06); }
+  66%{ transform:translate(-3%,3%) scale(0.96); }
+}
+@keyframes strokeReveal{ from{ clip-path:inset(0 100% 0 0); } to{ clip-path:inset(0 0 0 0); } }
+@keyframes riseIn{ from{ opacity:0; transform:translateY(14px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+@keyframes popIn{ from{ opacity:0; transform:scale(.9) translateY(8px); } to{ opacity:1; transform:scale(1) translateY(0); } }
+@keyframes fabGlow{
+  0%,100%{ box-shadow:0 12px 28px -8px rgba(120,60,200,.5), 0 0 0 0 rgba(155,77,255,.45); }
+  50%{ box-shadow:0 12px 28px -8px rgba(120,60,200,.6), 0 0 0 10px rgba(155,77,255,0); }
+}
+@keyframes heartPop{
+  0%{ transform:scale(1); }
+  35%{ transform:scale(1.5) rotate(-8deg); }
+  60%{ transform:scale(0.9); }
+  100%{ transform:scale(1); }
+}
+@keyframes burstPiece{
+  0%{ transform:translate(0,0) scale(1); opacity:1; }
+  100%{ transform:translate(var(--bx),var(--by)) scale(0); opacity:0; }
+}
+@keyframes shimmer{ 0%{ background-position:-300px 0; } 100%{ background-position:300px 0; } }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+@keyframes shakeX{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+@keyframes checkDraw{ from{ stroke-dashoffset:24; } to{ stroke-dashoffset:0; } }
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.001s !important; }
+}
+
+.stagger-in{ animation:riseIn .5s cubic-bezier(.2,.7,.2,1) both; }
+.shake{ animation:shakeX .35s; }
+.spinner{
+  width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;
+  animation:spin .7s linear infinite; display:inline-block; vertical-align:middle;
+}
+.spinner.dark{border:2.5px solid rgba(30,20,60,.15); border-top-color:var(--purple);}
+.skeleton{
+  background:linear-gradient(90deg,var(--surface-2) 25%,#e7e3fa 37%,var(--surface-2) 63%);
+  background-size:400px 100%; animation:shimmer 1.4s infinite;
+}
+
+/* ---------- splash / entry screen (inspired by the logo) ---------- */
+#splash{
+  position:fixed; inset:0; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  background:radial-gradient(circle at 50% 32%, #251A42, #0C0A18 72%);
+  transition:opacity .5s ease, visibility .5s ease;
+}
+#splash.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+.splash-ring{
+  width:104px; height:104px; border-radius:30px; background:var(--grad);
+  display:flex; align-items:center; justify-content:center; position:relative;
+  animation:splashPulse 1.8s ease-in-out infinite;
+}
+.splash-ring i{ font-size:46px; color:#fff; }
+@keyframes splashPulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(155,77,255,.55), 0 0 40px 6px rgba(61,108,255,.35); }
+  50%{ box-shadow:0 0 0 20px rgba(155,77,255,0), 0 0 55px 10px rgba(255,77,166,.4); }
+}
+.splash-title{
+  font-family:'Baloo 2',sans-serif; font-size:clamp(28px,7vw,40px); font-weight:800;
+  background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:strokeReveal 1s .35s cubic-bezier(.25,.8,.3,1) both; margin:6px 0 0;
+}
+.splash-sub{ color:#B9B4D6; font-size:13.5px; opacity:0; animation:riseIn .6s .95s both; letter-spacing:.3px; }
+.splash-dots{ display:flex; gap:10px; margin-top:4px; }
+.splash-dot{ width:13px; height:13px; border-radius:50%; opacity:0; animation:dotDrop .5s cubic-bezier(.34,1.56,.64,1) forwards; }
+.splash-dot:nth-child(1){ background:#FF4DA6; animation-delay:1.15s; }
+.splash-dot:nth-child(2){ background:#FFA23D; animation-delay:1.27s; }
+.splash-dot:nth-child(3){ background:#3D6CFF; animation-delay:1.39s; }
+.splash-dot:nth-child(4){ background:#3FCE83; animation-delay:1.51s; }
+@keyframes dotDrop{
+  0%{ opacity:0; transform:translateY(-16px) scale(.4); }
+  60%{ opacity:1; transform:translateY(3px) scale(1.15); }
+  100%{ opacity:1; transform:translateY(0) scale(1); }
+}
+h1,h2,h3,.brand-font{font-family:'Baloo 2','Tajawal',sans-serif;}
+a{color:inherit;}
+button{font-family:inherit;}
+img{max-width:100%;display:block;}
+[class^="ph-"],[class*=" ph-"]{ vertical-align:-2px; }
+.icon-btn i, .btn i, .brand-mark i, .fab i, .search-box i, .qr-frame-btn i{ font-size:16px; line-height:1; }
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  background:rgba(250,250,255,.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1180px; margin:0 auto; padding:14px 20px;
+  display:flex; align-items:center; gap:18px;
+}
+.brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; white-space:nowrap;}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;flex:none;
+  animation:brandGlow 3.2s ease-in-out infinite;
+}
+@keyframes brandGlow{
+  0%,100%{ box-shadow:0 6px 16px -6px rgba(60,40,120,.4), 0 0 0 0 rgba(155,77,255,.4); }
+  50%{ box-shadow:0 6px 16px -6px rgba(60,40,120,.4), 0 0 0 6px rgba(255,77,166,0); }
+}
+.brand-name span{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.tabs{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:14px; flex:1; overflow-x:auto;}
+.tab-btn{
+  border:none; background:transparent; padding:9px 16px; border-radius:11px;
+  font-weight:700; color:var(--ink-soft); cursor:pointer; font-size:14.5px; white-space:nowrap;
+  transition:.18s;
+}
+.tab-btn.active{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+.top-actions{display:flex; align-items:center; gap:10px; flex:none;}
+.btn{
+  border:none; cursor:pointer; font-weight:700; border-radius:12px; padding:10px 16px;
+  font-size:14px; transition:.15s; font-family:inherit;
+}
+.btn-primary{background:var(--grad); color:#fff; box-shadow:var(--shadow);}
+.btn-primary:hover{filter:brightness(1.06); transform:translateY(-1px);}
+.btn-ghost{background:var(--surface-2); color:var(--ink);}
+.btn-ghost:hover{background:#e9e6fb;}
+.avatar-btn{
+  width:40px;height:40px;border-radius:50%;border:2px solid var(--surface);
+  background:var(--grad); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:15px; box-shadow:var(--shadow);
+}
+
+/* ---------- layout ---------- */
+.page{max-width:1180px; margin:0 auto; padding:26px 20px 80px;}
+.hero{
+  padding:34px 30px; border-radius:26px; margin-bottom:26px; position:relative; overflow:hidden;
+  background:linear-gradient(120deg,#EEF1FF, #F6ECFF 60%, #FFEBF6);
+  border:1px solid var(--line);
+}
+.hero-blob{position:absolute; border-radius:50%; filter:blur(38px); opacity:.55; animation:blobFloat 11s ease-in-out infinite; pointer-events:none;}
+.hero-blob.b1{width:220px;height:220px; background:var(--blue); top:-70px; left:-50px; animation-delay:0s;}
+.hero-blob.b2{width:180px;height:180px; background:var(--pink); bottom:-70px; left:20%; animation-delay:2.5s;}
+.hero-blob.b3{width:200px;height:200px; background:var(--purple); top:-60px; right:-40px; animation-delay:5s;}
+.hero h1{font-size:clamp(24px,3.4vw,34px); margin:0 0 10px; line-height:1.25; position:relative; z-index:1; display:inline-block; animation:strokeReveal .9s cubic-bezier(.25,.8,.3,1) both;}
+.hero p{color:var(--ink-soft); margin:0; font-size:15.5px; max-width:640px; position:relative; z-index:1; animation:riseIn .6s .25s both;}
+.hero-corner{position:absolute; inset:0; pointer-events:none; opacity:.5;}
+
+.toolbar{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:20px;}
+.search-box{
+  flex:1; min-width:220px; display:flex; align-items:center; gap:8px;
+  background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 14px;
+}
+.search-box input{border:none; outline:none; background:transparent; width:100%; font-size:14.5px; color:var(--ink); font-family:inherit;}
+.tag-scroll{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px;}
+.tag-chip{
+  border:1px solid var(--line); background:var(--surface); padding:7px 14px; border-radius:999px;
+  font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap; flex:none;
+}
+.tag-chip.active{background:var(--grad); color:#fff; border-color:transparent;}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px;}
+
+/* ---------- content card (brush/palette/reference) ---------- */
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow);
+  transition:transform .28s cubic-bezier(.2,.7,.2,1), box-shadow .28s;
+}
+.card:hover{ transform:translateY(-5px); box-shadow:0 18px 40px -14px rgba(60,40,120,.28); }
+.card-media{position:relative; aspect-ratio:1/1; background:var(--surface-2); overflow:hidden;}
+.card-media img{width:100%;height:100%;object-fit:cover; transition:transform .5s;}
+.card:hover .card-media img{ transform:scale(1.06); }
+.qr-frame{
+  position:relative; width:118px; height:118px; margin:14px auto; background:#fff; border-radius:14px;
+  padding:8px; box-shadow:0 4px 16px rgba(60,40,120,.12); cursor:pointer;
+  transition:transform .25s, box-shadow .25s;
+}
+.qr-frame:hover{ transform:scale(1.05) rotate(-1deg); box-shadow:0 10px 26px -8px rgba(155,77,255,.4); }
+.qr-frame canvas,.qr-frame img{width:100%;height:100%;border-radius:6px;}
+.qr-frame::before,.qr-frame::after,.qr-frame .c2,.qr-frame .c3{content:'';position:absolute;width:16px;height:16px;border:3px solid var(--purple);transition:border-color .25s, width .25s, height .25s;}
+.qr-frame::before{top:-4px;right:-4px;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+.qr-frame::after{bottom:-4px;left:-4px;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+.qr-frame:hover::before,.qr-frame:hover::after{ border-color:var(--pink); width:20px; height:20px; }
+.card-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1;}
+.card-title{font-weight:700; font-size:15px; margin:0;}
+.card-source{font-size:12px; color:var(--ink-faint); font-weight:600;}
+.card-tags{display:flex; gap:6px; flex-wrap:wrap;}
+.mini-tag{font-size:11px; background:var(--surface-2); color:var(--ink-soft); padding:3px 9px; border-radius:999px; font-weight:600;}
+.card-actions{display:flex; align-items:center; gap:4px; margin-top:auto; padding-top:8px; border-top:1px solid var(--line);}
+.icon-btn{
+  border:none;background:none;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--ink-soft);
+  font-size:12.5px; font-weight:700; padding:7px 8px; border-radius:9px; flex:1; justify-content:center;
+}
+.icon-btn{transition:background .18s, color .18s, transform .18s;}
+.icon-btn:hover{background:var(--surface-2); transform:translateY(-1px);}
+.icon-btn:active{transform:scale(.94);}
+.icon-btn.liked{color:var(--pink);}
+.icon-btn.liked .heart-glyph{ animation:heartPop .45s; display:inline-block; }
+.icon-btn.saved{color:var(--blue);}
+.burst-wrap{position:relative; display:inline-block;}
+.burst-piece{position:absolute; top:50%; left:50%; width:5px; height:5px; border-radius:50%; background:var(--pink); pointer-events:none; animation:burstPiece .55s ease-out forwards;}
+
+/* ---------- community feed ---------- */
+.feed{display:flex; flex-direction:column; gap:18px; max-width:640px; margin:0 auto;}
+.post{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
+.post-head{display:flex; align-items:center; gap:10px; padding:14px 16px 10px;}
+.post-avatar{width:38px;height:38px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;}
+.post-user{font-weight:700; font-size:14px;}
+.post-type{font-size:12px; color:var(--ink-faint);}
+.post-media{width:100%; max-height:480px; object-fit:cover; background:var(--surface-2);}
+.post-body{padding:12px 16px 4px;}
+.post-actions{display:flex; border-top:1px solid var(--line); margin-top:10px;}
+.comments-box{padding:0 16px 14px; display:none;}
+.comments-box.open{display:block;}
+.comment-row{display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--line); font-size:13.5px;}
+.comment-input-row{display:flex; gap:8px; padding-top:10px;}
+.comment-input-row input{flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-family:inherit; font-size:13.5px;}
+
+.empty-state{
+  grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--ink-soft);
+  background:var(--surface); border:1px dashed var(--line); border-radius:var(--radius);
+}
+.empty-state b{display:block; font-size:17px; color:var(--ink); margin-bottom:6px; font-family:'Baloo 2';}
+
+/* ---------- fab ---------- */
+.fab{
+  position:fixed; bottom:26px; left:26px; z-index:35; width:58px; height:58px; border-radius:50%;
+  background:var(--grad); color:#fff; border:none; font-size:26px; cursor:pointer;
+  display:flex;align-items:center;justify-content:center; transition:transform .2s;
+  animation:fabGlow 2.6s ease-in-out infinite;
+}
+.fab:hover{ transform:scale(1.08) rotate(90deg); }
+.fab:active{ transform:scale(.95) rotate(90deg); }
+
+/* ---------- modal ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(20,15,40,.45); backdrop-filter:blur(3px);
+  display:none; align-items:flex-start; justify-content:center; z-index:100; padding:5vh 16px; overflow-y:auto;
+  opacity:0; transition:opacity .2s;
+}
+.overlay.open{display:flex; opacity:1;}
+.modal{
+  background:var(--surface); border-radius:22px; max-width:460px; width:100%; padding:26px;
+  box-shadow:0 30px 60px -20px rgba(30,20,60,.4);
+  animation:popIn .28s cubic-bezier(.2,.8,.2,1) both;
+}
+.modal.wide{max-width:600px;}
+.modal h3{margin:0 0 4px; font-size:20px;}
+.modal .sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;}
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--ink-soft);}
+.field input,.field select,.field textarea{
+  width:100%; border:1px solid var(--line); border-radius:11px; padding:10px 13px; font-family:inherit;
+  font-size:14px; background:var(--surface-2); outline:none;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple);}
+.modal-close{float:left; background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-faint);}
+.divider-or{display:flex; align-items:center; gap:10px; color:var(--ink-faint); font-size:12.5px; margin:16px 0;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--line);}
+.type-switch{display:flex; gap:8px; margin-bottom:16px;}
+.type-switch button{flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-weight:700; font-size:13px; cursor:pointer;}
+.type-switch button.active{background:var(--grad); color:#fff; border-color:transparent;}
+.qr-live{width:130px;height:130px;margin:0 auto 10px;}
+.msg{font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:12px;}
+.msg.ok{background:#E7F8EE; color:#1C7A43;}
+.msg.err{background:#FDEBEE; color:#C22B4C;}
+.toast{
+  position:fixed; bottom:26px; right:26px; background:var(--ink); color:#fff; padding:13px 20px; border-radius:12px;
+  font-size:14px; font-weight:600; z-index:200; box-shadow:var(--shadow); opacity:0; transform:translateY(14px) scale(.96);
+  transition:opacity .3s cubic-bezier(.2,.9,.3,1.3), transform .3s cubic-bezier(.2,.9,.3,1.3);
+  display:flex; align-items:center; gap:8px;
+}
+.toast.show{opacity:1; transform:translateY(0) scale(1);}
+footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px 20px; border-top:1px solid var(--line); margin-top:20px;}
+@media(max-width:720px){
+  .topbar-inner{flex-wrap:wrap;}
+  .tabs{order:3; width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-ring"><i class="ph-fill ph-palette"></i></div>
+  <div class="splash-title">GO Paint!</div>
+  <div class="splash-sub">Drawing accessories</div>
+  <div class="splash-dots">
+    <span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"><i class="ph-fill ph-palette"></i></div>
+      <div class="brand-name">GO <span>Paint!</span></div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="brush">الفرش</button>
+      <button class="tab-btn" data-tab="palette">الألوان</button>
+      <button class="tab-btn" data-tab="reference">المراجع</button>
+      <button class="tab-btn" data-tab="community">المجتمع</button>
+    </div>
+    <div class="top-actions" id="authArea">
+      <button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="hero" id="hero">
+    <span class="hero-blob b1"></span><span class="hero-blob b2"></span><span class="hero-blob b3"></span>
+    <h1 id="heroTitle">مكتبتك الشاملة لكل أدوات الرسم الرقمي</h1>
+    <p id="heroText">امسح رمز QR لتحصل مباشرة على الفرشاة أو لوحة الألوان، أو تصفّح مراجع الرسم — كل شيء في مكان واحد، لكل رسام رقمي.</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="ph ph-magnifying-glass" style="color:var(--ink-faint);"></i> <input id="searchInput" placeholder="ابحث بالاسم أو الوسم...">
+    </div>
+  </div>
+  <div class="tag-scroll" id="tagScroll"></div>
+
+  <div id="content" style="margin-top:18px;"></div>
+</div>
+
+<footer>GO Paint! : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.</footer>
+
+<button class="fab" id="fabAdd" title="أضف محتوى"><i class="ph-bold ph-plus"></i></button>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="modal-close" data-close="authOverlay"><i class="ph ph-x"></i></button>
+    <h3 id="authTitle">تسجيل الدخول</h3>
+    <p class="sub">سجّل دخولك لتنشر أعمالك وتتفاعل مع المجتمع</p>
+    <div id="authMsg"></div>
+    <div class="field" id="usernameField" style="display:none">
+      <label>اسم المستخدم</label>
+      <input id="authUsername" placeholder="مثال: younes_art">
+    </div>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input id="authEmail" type="email" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>كلمة السر</label>
+      <div style="position:relative;">
+        <input id="authPassword" type="password" placeholder="••••••••" style="padding-left:38px;">
+        <button type="button" id="pwToggle" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--ink-faint); padding:4px;"><i class="ph ph-eye"></i></button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="authSubmit" style="width:100%">دخول</button>
+    <p style="text-align:center; font-size:13px; margin:14px 0 0; color:var(--ink-soft);">
+      <span id="authSwitchText">ليس لديك حساب؟</span> <a href="#" id="authSwitch" style="color:var(--purple); font-weight:700;">أنشئ حساباً</a>
+    </p>
+    <div class="divider-or">أو</div>
+    <button class="btn btn-ghost" id="googleBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:9px;">
+      <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4.5 24 4.5 12.9 4.5 4 13.4 4 24.5s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 44.5c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6c-2 1.5-4.7 2.6-7.7 2.6-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 40 16.2 44.5 24 44.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.6 5.6C41.9 36.4 44 30.9 44 24.5c0-1.3-.1-2.7-.4-4z"/></svg>
+      المتابعة عبر Google
+    </button>
+  </div>
+</div>
+
+<!-- ACCOUNT MENU MODAL -->
+<div class="overlay" id="accountOverlay">
+  <div class="modal">
+    <button class="modal-close" data-close="accountOverlay"><i class="ph ph-x"></i></button>
+    <h3 id="accName">-</h3>
+    <p class="sub" id="accRole">-</p>
+    <button class="btn btn-ghost" style="width:100%; margin-bottom:10px;" id="myPostsBtn">منشوراتي</button>
+    <button class="btn btn-ghost" style="width:100%" id="logoutBtn">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- QR VIEW MODAL -->
+<div class="overlay" id="qrOverlay">
+  <div class="modal" style="text-align:center;">
+    <button class="modal-close" data-close="qrOverlay"><i class="ph ph-x"></i></button>
+    <h3 id="qrModalTitle">-</h3>
+    <div id="qrModalCanvas" style="width:220px;height:220px;margin:16px auto;background:#fff;padding:10px;border-radius:14px;box-shadow:var(--shadow);"></div>
+    <p class="sub" id="qrModalSource">-</p>
+    <button class="btn btn-primary" id="qrDownloadBtn" style="width:100%"><i class="ph ph-download-simple"></i> تحميل QR</button>
+  </div>
+</div>
+
+<!-- SUBMIT CONTENT MODAL -->
+<div class="overlay" id="submitOverlay">
+  <div class="modal wide">
+    <button class="modal-close" data-close="submitOverlay"><i class="ph ph-x"></i></button>
+    <h3>أضف محتوى جديد</h3>
+    <p class="sub">سيُنشر بعد موافقة الإدارة</p>
+    <div id="submitMsg"></div>
+    <div class="type-switch" id="typeSwitch">
+      <button data-type="brush" class="active">فرشاة</button>
+      <button data-type="palette">ألوان</button>
+      <button data-type="reference">مرجع</button>
+      <button data-type="project">مشروعي</button>
+    </div>
+    <div class="field" id="subcatField" style="display:none">
+      <label>نوع المرجع</label>
+      <select id="subcatInput">
+        <option value="eyes">عيون</option>
+        <option value="face">ملامح الوجه</option>
+        <option value="body">هيكل الجسم</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>العنوان</label>
+      <input id="itemTitle" placeholder="مثال: فرشاة تظليل ناعمة">
+    </div>
+    <div class="field">
+      <label>وصف مختصر (اختياري)</label>
+      <textarea id="itemDesc"></textarea>
+    </div>
+    <div class="field" id="linkField">
+      <label>رابط الفرشاة / اللوحة (سيتحول تلقائياً إلى QR)</label>
+      <input id="itemLink" placeholder="https://...">
+      <div class="qr-live" id="liveQr"></div>
+    </div>
+    <div class="field">
+      <label>صورة معاينة</label>
+      <input id="itemImage" type="file" accept="image/*">
+    </div>
+    <div class="field">
+      <label>المصدر (مثال: Pinterest, Google)</label>
+      <input id="itemSource" placeholder="Pinterest">
+    </div>
+    <div class="field">
+      <label>وسوم (افصل بينها بفاصلة)</label>
+      <input id="itemTags" placeholder="anime, تظليل, رقمي">
+    </div>
+    <button class="btn btn-primary" id="submitItemBtn" style="width:100%">إرسال للمراجعة</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://cdxkktwewqtvttlyjolb.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Fv1CzDb7xGCB8sMtD6e4Kw_pKe54UPU";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null, currentProfile = null;
+let activeTab = 'brush';
+let items = [];
+let myLikes = new Set(), mySaves = new Set();
+let allTags = new Set();
+let activeTagFilter = null;
+let authMode = 'login';
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function toast(msg){
+  const t = $('#toast'); t.innerHTML = `<i class="ph-fill ph-check-circle" style="color:#3FCE83;font-size:17px;"></i> ${msg}`; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function openModal(id){ $('#'+id).classList.add('open'); }
+function closeModal(id){ $('#'+id).classList.remove('open'); }
+$$('[data-close]').forEach(b=> b.addEventListener('click', ()=>closeModal(b.dataset.close)));
+$$('.overlay').forEach(o=> o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+const HERO_TEXT = {
+  brush: ["مكتبة فرش iBis Paint", "امسح رمز QR لتحصل على الفرشاة مباشرة داخل التطبيق."],
+  palette: ["لوحات ألوان جاهزة", "امسح QR لتستورد لوحة الألوان مباشرة."],
+  reference: ["مراجع للرسم", "عيون، ملامح، وهياكل جسم لتطوير مهاراتك — المصادر مذكورة تحت كل صورة."],
+  community: ["مجتمع الرسامين", "شارك أعمالك، وتفاعل مع رسامين آخرين حول العالم."]
+};
+
+/* ---------------- AUTH ---------------- */
+async function refreshSession(){
+  const { data:{ session } } = await sb.auth.getSession();
+  currentUser = session ? session.user : null;
+  if(currentUser){
+    let { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+    if(!profile){
+      const uname = (currentUser.email||'user').split('@')[0] + Math.floor(Math.random()*1000);
+      const { data: np } = await sb.from('profiles').insert({ id: currentUser.id, username: uname }).select().maybeSingle();
+      profile = np;
+    }
+    currentProfile = profile;
+  } else { currentProfile = null; }
+  renderAuthArea();
+  loadMyReactions();
+}
+function renderAuthArea(){
+  const el = $('#authArea');
+  if(currentUser && currentProfile){
+    el.innerHTML = `<button class="avatar-btn" id="avatarBtn">${(currentProfile.username||'U')[0].toUpperCase()}</button>`;
+    $('#avatarBtn').addEventListener('click', ()=>{
+      $('#accName').textContent = currentProfile.display_name || currentProfile.username;
+      $('#accRole').textContent = currentProfile.role==='admin' ? 'مسؤول' : (currentProfile.role==='artist'?'فنان':'مستخدم');
+      openModal('accountOverlay');
+    });
+  } else {
+    el.innerHTML = `<button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>`;
+    $('#loginBtn').addEventListener('click', ()=> openModal('authOverlay'));
+  }
+}
+$('#authSwitch').addEventListener('click', e=>{
+  e.preventDefault();
+  authMode = authMode==='login' ? 'signup' : 'login';
+  $('#authTitle').textContent = authMode==='login' ? 'تسجيل الدخول' : 'إنشاء حساب';
+  $('#authSubmit').textContent = authMode==='login' ? 'دخول' : 'إنشاء الحساب';
+  $('#usernameField').style.display = authMode==='signup' ? 'block' : 'none';
+  $('#authSwitchText').textContent = authMode==='login' ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟';
+  $('#authSwitch').textContent = authMode==='login' ? 'أنشئ حساباً' : 'سجّل الدخول';
+});
+$('#pwToggle').addEventListener('click', ()=>{
+  const inp = $('#authPassword');
+  const isPw = inp.type==='password';
+  inp.type = isPw ? 'text' : 'password';
+  $('#pwToggle').innerHTML = isPw ? '<i class="ph ph-eye-slash"></i>' : '<i class="ph ph-eye"></i>';
+});
+function shakeModal(){
+  const m = document.querySelector('#authOverlay .modal');
+  m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake');
+}
+function setBtnLoading(btn, loading, labelWhenIdle){
+  if(loading){ btn.dataset.label = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
+  else { btn.innerHTML = labelWhenIdle || btn.dataset.label || btn.innerHTML; btn.disabled = false; }
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+$('#authSubmit').addEventListener('click', async ()=>{
+  const email = $('#authEmail').value.trim(), password = $('#authPassword').value;
+  const msgEl = $('#authMsg'); msgEl.innerHTML='';
+  if(!email || !EMAIL_RE.test(email)){ msgEl.innerHTML = '<div class="msg err">أدخل بريداً إلكترونياً صحيحاً</div>'; shakeModal(); return; }
+  if(!password || password.length < 6){ msgEl.innerHTML = '<div class="msg err">كلمة السر يجب أن تكون 6 أحرف على الأقل</div>'; shakeModal(); return; }
+  const btn = $('#authSubmit');
+  const idleLabel = authMode==='login' ? 'دخول' : 'إنشاء الحساب';
+  setBtnLoading(btn, true);
+  if(authMode==='signup'){
+    const username = $('#authUsername').value.trim();
+    if(!username){ msgEl.innerHTML = '<div class="msg err">الرجاء اختيار اسم مستخدم</div>'; shakeModal(); setBtnLoading(btn,false,idleLabel); return; }
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if(error){ msgEl.innerHTML = `<div class="msg err">${error.message}</div>`; shakeModal(); setBtnLoading(btn,false,idleLabel); return; }
+    if(data.user){
+      await sb.from('profiles').upsert({ id: data.user.id, username });
+    }
+    setBtnLoading(btn, false, '<i class="ph-fill ph-check-circle"></i> تم');
+    msgEl.innerHTML = '<div class="msg ok">تم إنشاء الحساب! تحقق من بريدك للتفعيل إذا لزم.</div>';
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){ msgEl.innerHTML = `<div class="msg err">${error.message}</div>`; shakeModal(); setBtnLoading(btn,false,idleLabel); return; }
+    setBtnLoading(btn, false, '<i class="ph-fill ph-check-circle"></i> تم');
+  }
+  await refreshSession();
+  if(currentUser){ setTimeout(()=>{ closeModal('authOverlay'); setBtnLoading(btn,false,idleLabel); }, 400); toast('تم تسجيل الدخول بنجاح'); }
+  else { setBtnLoading(btn,false,idleLabel); }
+});
+$('#googleBtn').addEventListener('click', async ()=>{
+  await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.href } });
+});
+$('#logoutBtn').addEventListener('click', async ()=>{
+  await sb.auth.signOut(); currentUser=null; currentProfile=null;
+  renderAuthArea(); closeModal('accountOverlay'); toast('تم تسجيل الخروج');
+});
+$('#myPostsBtn').addEventListener('click', ()=>{
+  closeModal('accountOverlay'); switchTab('community', true);
+});
+
+sb.auth.onAuthStateChange((_e, _s)=> refreshSession());
+
+/* ---------------- TABS ---------------- */
+$$('.tab-btn').forEach(btn=> btn.addEventListener('click', ()=> switchTab(btn.dataset.tab)));
+function switchTab(tab, mineOnly){
+  activeTab = tab;
+  $$('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  const [t, d] = HERO_TEXT[tab];
+  $('#heroTitle').textContent = t; $('#heroText').textContent = d;
+  activeTagFilter = null;
+  loadItems(mineOnly);
+}
+
+/* ---------------- DATA LOADING ---------------- */
+function renderSkeleton(){
+  const c = $('#content');
+  if(activeTab==='community'){
+    c.innerHTML = '<div class="feed">' + Array(2).fill(`<div class="post"><div style="height:280px;" class="skeleton"></div><div style="padding:14px;"><div class="skeleton" style="height:14px;width:60%;border-radius:6px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:40%;border-radius:6px;"></div></div></div>`).join('') + '</div>';
+  } else {
+    c.innerHTML = '<div class="grid">' + Array(6).fill(`<div class="card"><div class="skeleton" style="aspect-ratio:1/1;"></div><div style="padding:14px;"><div class="skeleton" style="height:13px;width:70%;border-radius:6px;"></div></div></div>`).join('') + '</div>';
+  }
+}
+async function loadItems(mineOnly){
+  renderSkeleton();
+  const type = activeTab==='community' ? null : activeTab;
+  let q = sb.from('content_items').select('*, artist:profiles(username, role)').order('created_at', {ascending:false});
+  if(type) q = q.eq('type', type);
+  if(mineOnly && currentUser) q = q.eq('artist_id', currentUser.id);
+  else q = q.eq('status','approved');
+  const { data, error } = await q;
+  if(error){ console.error(error); items=[]; } else { items = data||[]; }
+  allTags = new Set();
+  items.forEach(it => (it.tags||[]).forEach(t=>allTags.add(t)));
+  renderTagScroll();
+  renderItems();
+}
+async function loadMyReactions(){
+  if(!currentUser){ myLikes=new Set(); mySaves=new Set(); renderItems(); return; }
+  const { data: likes } = await sb.from('likes').select('content_id').eq('user_id', currentUser.id);
+  const { data: saves } = await sb.from('saves').select('content_id').eq('user_id', currentUser.id);
+  myLikes = new Set((likes||[]).map(l=>l.content_id));
+  mySaves = new Set((saves||[]).map(s=>s.content_id));
+  renderItems();
+}
+function renderTagScroll(){
+  const el = $('#tagScroll');
+  if(allTags.size===0){ el.innerHTML=''; return; }
+  el.innerHTML = [...allTags].slice(0,20).map(t=>
+    `<button class="tag-chip ${activeTagFilter===t?'active':''}" data-tag="${t}">${t}</button>`
+  ).join('');
+  el.querySelectorAll('.tag-chip').forEach(c=> c.addEventListener('click', ()=>{
+    activeTagFilter = activeTagFilter===c.dataset.tag ? null : c.dataset.tag;
+    renderTagScroll(); renderItems();
+  }));
+}
+$('#searchInput').addEventListener('input', renderItems);
+
+function filteredItems(){
+  const q = $('#searchInput').value.trim().toLowerCase();
+  return items.filter(it=>{
+    if(activeTagFilter && !(it.tags||[]).includes(activeTagFilter)) return false;
+    if(!q) return true;
+    return (it.title||'').toLowerCase().includes(q) || (it.tags||[]).some(t=>t.toLowerCase().includes(q));
+  });
+}
+
+/* ---------------- RENDER ---------------- */
+function renderItems(){
+  const list = filteredItems();
+  const c = $('#content');
+  if(activeTab==='community'){
+    c.innerHTML = `<div class="feed" id="feed"></div>`;
+    const feed = $('#feed');
+    if(list.length===0){ feed.innerHTML = emptyState('لا توجد منشورات بعد','كن أول من يشارك عمله مع المجتمع!'); return; }
+    feed.innerHTML = list.map(postCard).join('');
+    feed.querySelectorAll('.post').forEach((el,i)=>{ el.classList.add('stagger-in'); el.style.animationDelay = Math.min(i*70,350)+'ms'; });
+    list.forEach(it=> wirePost(it));
+  } else {
+    if(list.length===0){
+      c.innerHTML = `<div class="grid">${emptyState(emptyTitle(activeTab), 'ترقّب الإضافات القادمة قريباً')}</div>`;
+      return;
+    }
+    c.innerHTML = `<div class="grid">${list.map(gridCard).join('')}</div>`;
+    c.querySelectorAll('.card').forEach((el,i)=>{ el.classList.add('stagger-in'); el.style.animationDelay = Math.min(i*45,400)+'ms'; });
+    list.forEach(it=> wireCard(it));
+  }
+}
+function emptyTitle(tab){
+  return {brush:'لا توجد فرش بعد', palette:'لا توجد لوحات ألوان بعد', reference:'لا توجد مراجع بعد'}[tab];
+}
+function emptyState(title, sub){
+  return `<div class="empty-state"><b>${title}</b>${sub}</div>`;
+}
+function typeLabel(t){ return {brush:'فرشاة',palette:'ألوان',reference:'مرجع',project:'مشروع'}[t]||t; }
+
+function gridCard(it){
+  const liked = myLikes.has(it.id), saved = mySaves.has(it.id);
+  const img = it.image_url ? `<div class="card-media"><img src="${it.image_url}" loading="lazy"></div>` : '';
+  const qr = it.file_url ? `<div class="qr-frame" data-link="${it.file_url}" id="qrf-${it.id}"></div>` : '';
+  return `
+  <div class="card">
+    ${img}
+    ${qr}
+    <div class="card-body">
+      <p class="card-title">${escapeHtml(it.title)}</p>
+      ${it.source_name ? `<span class="card-source">المصدر: ${escapeHtml(it.source_name)}</span>` : ''}
+      <div class="card-tags">${(it.tags||[]).slice(0,4).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
+      <div class="card-actions">
+        <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> ${it.likes_count||0}</button>
+        <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> حفظ</button>
+        <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> مشاركة</button>
+      </div>
+    </div>
+  </div>`;
+}
+function postCard(it){
+  const liked = myLikes.has(it.id), saved = mySaves.has(it.id);
+  const uname = it.artist ? it.artist.username : 'GO Paint';
+  return `
+  <div class="post" data-id="${it.id}">
+    <div class="post-head">
+      <div class="post-avatar">${uname[0].toUpperCase()}</div>
+      <div><div class="post-user">${escapeHtml(uname)}</div><div class="post-type">${typeLabel(it.type)} ${it.subcategory?('· '+it.subcategory):''}</div></div>
+    </div>
+    ${it.image_url ? `<img class="post-media" src="${it.image_url}" loading="lazy">` : ''}
+    <div class="post-body">
+      <p class="card-title">${escapeHtml(it.title)}</p>
+      ${it.description ? `<p style="font-size:13.5px;color:var(--ink-soft);margin:2px 0 6px;">${escapeHtml(it.description)}</p>` : ''}
+      ${it.source_name ? `<span class="card-source">المصدر: ${escapeHtml(it.source_name)}</span>` : ''}
+      <div class="card-tags">${(it.tags||[]).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
+      ${it.file_url ? `<div class="qr-frame" data-link="${it.file_url}" id="qrf-${it.id}" style="margin:12px auto 0;"></div>` : ''}
+    </div>
+    <div class="post-actions">
+      <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> إعجاب (${it.likes_count||0})</button>
+      <button class="icon-btn comment-toggle" data-id="${it.id}"><i class="ph ph-chat-circle-dots"></i> تعليق (${it.comments_count||0})</button>
+      <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> حفظ</button>
+      <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> مشاركة</button>
+    </div>
+    <div class="comments-box" id="comments-${it.id}">
+      <div class="comment-list" id="commentList-${it.id}"></div>
+      <div class="comment-input-row">
+        <input placeholder="اكتب تعليقاً..." id="commentInput-${it.id}">
+        <button class="btn btn-primary" data-id="${it.id}" style="padding:8px 14px;" onclick="postComment('${it.id}')">إرسال</button>
+      </div>
+    </div>
+  </div>`;
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function wireCard(it){
+  const qrEl = document.getElementById('qrf-'+it.id);
+  if(qrEl) drawQr(qrEl, it.file_url, ()=> showQrModal(it));
+  document.querySelectorAll(`.like-btn[data-id="${it.id}"]`).forEach(b=> b.addEventListener('click', ()=>toggleLike(it, b)));
+  document.querySelectorAll(`.save-btn[data-id="${it.id}"]`).forEach(b=> b.addEventListener('click', ()=>toggleSave(it)));
+  document.querySelectorAll(`.share-btn[data-id="${it.id}"]`).forEach(b=> b.addEventListener('click', ()=>shareItem(it)));
+}
+function wirePost(it){
+  wireCard(it);
+  const t = document.querySelector(`.comment-toggle[data-id="${it.id}"]`);
+  if(t) t.addEventListener('click', ()=> toggleComments(it.id));
+}
+function drawQr(el, text, onClick){
+  el.innerHTML = '<canvas></canvas>';
+  const canvas = el.querySelector('canvas');
+  QRCode.toCanvas(canvas, text || 'https://gopaint.app', { width:200, margin:1, color:{dark:'#1D1A2E', light:'#ffffff'} });
+  if(onClick) el.addEventListener('click', onClick);
+}
+function showQrModal(it){
+  $('#qrModalTitle').textContent = it.title;
+  $('#qrModalSource').textContent = it.source_name ? ('المصدر: '+it.source_name) : '';
+  const holder = $('#qrModalCanvas'); holder.innerHTML='<canvas></canvas>';
+  const canvas = holder.querySelector('canvas');
+  QRCode.toCanvas(canvas, it.file_url || '', { width:200, margin:1 });
+  $('#qrDownloadBtn').onclick = ()=>{
+    const link = document.createElement('a');
+    link.download = (it.title||'qr') + '.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+  openModal('qrOverlay');
+}
+function shareItem(it){
+  const url = it.file_url || window.location.href;
+  if(navigator.share){ navigator.share({ title: it.title, url }); }
+  else { navigator.clipboard.writeText(url); toast('تم نسخ الرابط'); }
+}
+function spawnBurst(btn){
+  if(!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const colors = ['#FF4DA6','#9B4DFF','#3D6CFF'];
+  for(let i=0;i<8;i++){
+    const p = document.createElement('span');
+    const angle = (Math.PI*2*i)/8, dist = 24 + Math.random()*14;
+    p.className='burst-piece';
+    p.style.background = colors[i%colors.length];
+    p.style.left = (rect.left + rect.width/2) + 'px';
+    p.style.top = (rect.top + rect.height/2) + 'px';
+    p.style.position='fixed';
+    p.style.setProperty('--bx', Math.cos(angle)*dist+'px');
+    p.style.setProperty('--by', Math.sin(angle)*dist+'px');
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 600);
+  }
+}
+async function toggleLike(it, btn){
+  if(!currentUser){ openModal('authOverlay'); return; }
+  const wasLiked = myLikes.has(it.id);
+  if(wasLiked){
+    await sb.from('likes').delete().eq('user_id', currentUser.id).eq('content_id', it.id);
+    myLikes.delete(it.id); it.likes_count = Math.max((it.likes_count||1)-1,0);
+  } else {
+    await sb.from('likes').insert({ user_id: currentUser.id, content_id: it.id });
+    myLikes.add(it.id); it.likes_count = (it.likes_count||0)+1;
+    spawnBurst(btn);
+  }
+  renderItems();
+}
+async function toggleSave(it){
+  if(!currentUser){ openModal('authOverlay'); return; }
+  if(mySaves.has(it.id)){
+    await sb.from('saves').delete().eq('user_id', currentUser.id).eq('content_id', it.id);
+    mySaves.delete(it.id);
+  } else {
+    await sb.from('saves').insert({ user_id: currentUser.id, content_id: it.id });
+    mySaves.add(it.id);
+  }
+  renderItems();
+}
+async function toggleComments(id){
+  const box = document.getElementById('comments-'+id);
+  box.classList.toggle('open');
+  if(box.classList.contains('open')){
+    const { data } = await sb.from('comments').select('*, author:profiles(username)').eq('content_id', id).order('created_at');
+    document.getElementById('commentList-'+id).innerHTML = (data||[]).map(c=>
+      `<div class="comment-row"><b>${escapeHtml(c.author?.username||'user')}:</b> ${escapeHtml(c.body)}</div>`
+    ).join('') || '<p style="color:var(--ink-faint);font-size:13px;">لا تعليقات بعد</p>';
+  }
+}
+async function postComment(id){
+  if(!currentUser){ openModal('authOverlay'); return; }
+  const input = document.getElementById('commentInput-'+id);
+  const body = input.value.trim();
+  if(!body) return;
+  await sb.from('comments').insert({ content_id:id, user_id: currentUser.id, body });
+  input.value='';
+  const it = items.find(i=>i.id===id); if(it) it.comments_count=(it.comments_count||0)+1;
+  toggleComments(id); toggleComments(id);
+}
+window.postComment = postComment;
+
+/* ---------------- SUBMIT CONTENT ---------------- */
+$('#fabAdd').addEventListener('click', ()=>{
+  if(!currentUser){ openModal('authOverlay'); return; }
+  openModal('submitOverlay');
+});
+let submitType = 'brush';
+$$('#typeSwitch button').forEach(b=> b.addEventListener('click', ()=>{
+  submitType = b.dataset.type;
+  $$('#typeSwitch button').forEach(x=>x.classList.toggle('active', x===b));
+  $('#subcatField').style.display = submitType==='reference' ? 'block':'none';
+  $('#linkField').style.display = (submitType==='brush'||submitType==='palette') ? 'block':'none';
+}));
+$('#itemLink').addEventListener('input', e=>{
+  const v = e.target.value.trim();
+  const holder = $('#liveQr');
+  if(!v){ holder.innerHTML=''; return; }
+  holder.innerHTML = '<canvas></canvas>';
+  QRCode.toCanvas(holder.querySelector('canvas'), v, { width:130, margin:1 });
+});
+$('#submitItemBtn').addEventListener('click', async ()=>{
+  const msgEl = $('#submitMsg'); msgEl.innerHTML='';
+  const btn = $('#submitItemBtn');
+  const title = $('#itemTitle').value.trim();
+  const link = $('#itemLink').value.trim();
+  const file = $('#itemImage').files[0];
+  const tags = $('#itemTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if(!title){ msgEl.innerHTML='<div class="msg err">الرجاء إدخال عنوان</div>'; return; }
+  if((submitType==='brush'||submitType==='palette') && !link){ msgEl.innerHTML='<div class="msg err">الرجاء إدخال الرابط</div>'; return; }
+  setBtnLoading(btn, true);
+  let image_url = null;
+  const idleLabel = 'إرسال للمراجعة';
+  if(file){
+    const path = `${currentUser.id}/${Date.now()}-${file.name}`;
+    const { error: upErr } = await sb.storage.from('content-media').upload(path, file);
+    if(upErr){ msgEl.innerHTML = `<div class="msg err">فشل رفع الصورة: ${upErr.message}</div>`; setBtnLoading(btn,false,idleLabel); return; }
+    image_url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
+  }
+  const payload = {
+    type: submitType, title, description: $('#itemDesc').value.trim() || null,
+    artist_id: currentUser.id, file_url: link || null, image_url,
+    source_name: $('#itemSource').value.trim() || null, tags,
+    subcategory: submitType==='reference' ? $('#subcatInput').value : null
+  };
+  const { error } = await sb.from('content_items').insert(payload);
+  if(error){ msgEl.innerHTML = `<div class="msg err">${error.message}</div>`; setBtnLoading(btn,false,idleLabel); return; }
+  setBtnLoading(btn, false, '<i class="ph-fill ph-check-circle"></i> تم الإرسال');
+  msgEl.innerHTML = '<div class="msg ok">تم الإرسال! سيظهر بعد موافقة الإدارة.</div>';
+  setTimeout(()=>{ closeModal('submitOverlay'); ['itemTitle','itemDesc','itemLink','itemSource','itemTags'].forEach(id=>$('#'+id).value=''); $('#itemImage').value=''; $('#liveQr').innerHTML=''; msgEl.innerHTML=''; setBtnLoading(btn,false,idleLabel); }, 1400);
+});
+
+/* ---------------- INIT ---------------- */
+(async function init(){
+  const start = Date.now();
+  await refreshSession();
+  await loadItems();
+  const elapsed = Date.now() - start;
+  const wait = Math.max(0, 1600 - elapsed);
+  setTimeout(()=>{
+    const s = document.getElementById('splash');
+    if(s){ s.classList.add('hide'); setTimeout(()=>s.remove(), 650); }
+  }, wait);
+})();
+</script>
+</body>
+</html>
