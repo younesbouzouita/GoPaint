@@ -125,8 +125,7 @@ img{max-width:100%;display:block;}
 /* ---------- top bar ---------- */
 .topbar{
   position:sticky; top:0; z-index:40;
-  background:rgba(250,250,255,.88);
-  backdrop-filter:blur(10px);
+  background:#FCFCFF;
   border-bottom:1px solid var(--line);
 }
 .topbar-row1{
@@ -304,6 +303,31 @@ img{max-width:100%;display:block;}
 .stat-cell{background:var(--surface-2); border-radius:12px; padding:12px 6px; text-align:center;}
 .stat-cell b{display:block; font-size:17px; font-family:'Baloo 2'; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
 .stat-cell span{font-size:11.5px; color:var(--ink-soft); font-weight:600;}
+.settings-tabs{display:flex; gap:6px; overflow-x:auto; margin-bottom:18px; padding-bottom:2px;}
+.settings-tabs button{
+  flex:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  padding:8px 14px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;
+  display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.settings-tabs button.active{ background:var(--grad); color:#fff; border-color:transparent; }
+.lang-switch{ display:flex; gap:10px; }
+.lang-opt{
+  flex:1; border:2px solid var(--line); border-radius:14px; padding:16px; text-align:center; cursor:pointer;
+  background:var(--surface-2); font-weight:700; transition:.15s;
+}
+.lang-opt.active{ border-color:var(--purple); background:#F3ECFF; }
+.avatar-edit{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.avatar-edit .big-avatar{
+  width:64px; height:64px; border-radius:50%; background:var(--grad); color:#fff; font-weight:800; font-size:24px;
+  display:flex; align-items:center; justify-content:center; flex:none; overflow:hidden;
+}
+.avatar-edit .big-avatar img{ width:100%; height:100%; object-fit:cover; }
+.req-list{ list-style:none; padding:0; margin:0 0 14px; display:flex; flex-direction:column; gap:8px; }
+.req-list li{ display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink-soft); }
+.req-list li.met{ color:var(--ink); font-weight:700; }
+.req-list i{ font-size:17px; }
+.req-list li.met i{ color:#1C7A43; }
+.req-list li:not(.met) i{ color:var(--ink-faint); }
 .field{margin-bottom:14px;}
 .field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--ink-soft);}
 .field input,.field select,.field textarea{
@@ -353,15 +377,15 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
       <div class="brand-name">GO <span>Paint</span></div>
     </div>
     <div class="top-actions" id="authArea">
-      <button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>
+      <button class="btn btn-ghost" id="loginBtn" data-i18n="login">تسجيل الدخول</button>
     </div>
   </div>
   <div class="topbar-row2">
     <div class="tabs" id="tabs">
-      <button class="tab-btn active" data-tab="brush">الفرش</button>
-      <button class="tab-btn" data-tab="palette">الألوان</button>
-      <button class="tab-btn" data-tab="reference">المراجع</button>
-      <button class="tab-btn" data-tab="community">المجتمع</button>
+      <button class="tab-btn active" data-tab="brush" data-i18n="tabBrush">الفرش</button>
+      <button class="tab-btn" data-tab="palette" data-i18n="tabPalette">الألوان</button>
+      <button class="tab-btn" data-tab="reference" data-i18n="tabReference">المراجع</button>
+      <button class="tab-btn" data-tab="community" data-i18n="tabCommunity">المجتمع</button>
     </div>
   </div>
 </div>
@@ -375,7 +399,7 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
 
   <div class="toolbar">
     <div class="search-box">
-      <i class="ph ph-magnifying-glass" style="color:var(--ink-faint);"></i> <input id="searchInput" placeholder="ابحث بالاسم أو الوسم...">
+      <i class="ph ph-magnifying-glass" style="color:var(--ink-faint);"></i> <input id="searchInput" data-i18n-ph="searchPh" placeholder="ابحث بالاسم أو الوسم...">
     </div>
   </div>
   <div class="tag-scroll" id="tagScroll"></div>
@@ -383,7 +407,7 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
   <div id="content" style="margin-top:18px;"></div>
 </div>
 
-<footer>GO Paint : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.</footer>
+<footer data-i18n="footer">GO Paint : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.</footer>
 
 <button class="fab" id="fabAdd" title="أضف محتوى"><i class="ph-bold ph-plus"></i></button>
 
@@ -392,18 +416,18 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
   <div class="modal">
     <button class="modal-close" data-close="authOverlay"><i class="ph ph-x"></i></button>
     <h3 id="authTitle">تسجيل الدخول</h3>
-    <p class="sub">سجّل دخولك لتنشر أعمالك وتتفاعل مع المجتمع</p>
+    <p class="sub" data-i18n="authSub">سجّل دخولك لتنشر أعمالك وتتفاعل مع المجتمع</p>
     <div id="authMsg"></div>
     <div class="field" id="usernameField" style="display:none">
-      <label>اسم المستخدم</label>
+      <label data-i18n="authUsernameLabel">اسم المستخدم</label>
       <input id="authUsername" placeholder="مثال: younes_art">
     </div>
     <div class="field">
-      <label>البريد الإلكتروني</label>
+      <label data-i18n="authEmailLabel">البريد الإلكتروني</label>
       <input id="authEmail" type="email" placeholder="you@example.com">
     </div>
     <div class="field">
-      <label>كلمة السر</label>
+      <label data-i18n="authPasswordLabel">كلمة السر</label>
       <div style="position:relative;">
         <input id="authPassword" type="password" placeholder="••••••••" style="padding-left:38px;">
         <button type="button" id="pwToggle" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--ink-faint); padding:4px;"><i class="ph ph-eye"></i></button>
@@ -413,10 +437,10 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
     <p style="text-align:center; font-size:13px; margin:14px 0 0; color:var(--ink-soft);">
       <span id="authSwitchText">ليس لديك حساب؟</span> <a href="#" id="authSwitch" style="color:var(--purple); font-weight:700;">أنشئ حساباً</a>
     </p>
-    <div class="divider-or">أو</div>
+    <div class="divider-or" data-i18n="orDivider">أو</div>
     <button class="btn btn-ghost" id="googleBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:9px;">
       <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4.5 24 4.5 12.9 4.5 4 13.4 4 24.5s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 44.5c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6c-2 1.5-4.7 2.6-7.7 2.6-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 40 16.2 44.5 24 44.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.6 5.6C41.9 36.4 44 30.9 44 24.5c0-1.3-.1-2.7-.4-4z"/></svg>
-      المتابعة عبر Google
+      <span data-i18n="googleContinue">المتابعة عبر Google</span>
     </button>
   </div>
 </div>
@@ -428,12 +452,28 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
     <h3 id="accName">-</h3>
     <p class="sub" id="accRole">-</p>
     <div class="stat-grid" id="accStats">
-      <div class="stat-cell"><b>-</b><span>متابعون</span></div>
-      <div class="stat-cell"><b>-</b><span>إعجابات</span></div>
-      <div class="stat-cell"><b>-</b><span>تنزيلات</span></div>
+      <div class="stat-cell"><b>-</b><span data-i18n="statFollowers">متابعون</span></div>
+      <div class="stat-cell"><b>-</b><span data-i18n="statLikes">إعجابات</span></div>
+      <div class="stat-cell"><b>-</b><span data-i18n="statDownloads">تنزيلات</span></div>
     </div>
-    <button class="btn btn-ghost" style="width:100%; margin-bottom:10px;" id="myPostsBtn">منشوراتي</button>
-    <button class="btn btn-ghost" style="width:100%" id="logoutBtn">تسجيل الخروج</button>
+    <button class="btn btn-ghost" style="width:100%; margin-bottom:10px;" id="myPostsBtn"><i class="ph ph-image-square"></i> <span data-i18n="accMyPosts">منشوراتي</span></button>
+    <button class="btn btn-ghost" style="width:100%; margin-bottom:10px;" id="settingsBtn"><i class="ph ph-gear-six"></i> <span data-i18n="sSettings">الإعدادات</span></button>
+    <button class="btn btn-ghost" style="width:100%" id="logoutBtn"><i class="ph ph-sign-out"></i> <span data-i18n="accLogout">تسجيل الخروج</span></button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal wide">
+    <button class="modal-close" data-close="settingsOverlay"><i class="ph ph-x"></i></button>
+    <h3 data-i18n="settingsTitle">الإعدادات</h3>
+    <div class="settings-tabs" id="settingsTabs">
+      <button class="active" data-s="lang"><i class="ph ph-translate"></i> <span data-i18n="sLang">اللغة</span></button>
+      <button data-s="account"><i class="ph ph-user-circle"></i> <span data-i18n="sAccount">حسابي</span></button>
+      <button data-s="verify"><i class="ph-fill ph-seal-check"></i> <span data-i18n="sVerify">التوثيق</span></button>
+      <button data-s="about"><i class="ph ph-info"></i> <span data-i18n="sAbout">عن التطبيق</span></button>
+    </div>
+    <div id="settingsPanel"></div>
   </div>
 </div>
 
@@ -442,7 +482,7 @@ footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:30px
   <div class="modal" style="text-align:center;">
     <button class="modal-close" data-close="mediaOverlay"><i class="ph ph-x"></i></button>
     <h3 id="mediaModalTitle">-</h3>
-    <img id="mediaModalImg" style="width:100%;border-radius:14px;margin:14px 0;box-shadow:var(--shadow);" src="">
+    <img id="mediaModalImg" class="skeleton" style="width:100%;min-height:180px;border-radius:14px;margin:14px 0;box-shadow:var(--shadow);opacity:0;transition:opacity .25s;" src="">
     <p class="sub" id="mediaModalSource">-</p>
     <a class="btn btn-primary" id="mediaDownloadBtn" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;" download target="_blank"><i class="ph ph-download-simple"></i> تحميل الصورة</a>
   </div>
@@ -508,7 +548,65 @@ let allTags = new Set();
 let activeTagFilter = null;
 let authMode = 'login';
 
-const $ = s => document.querySelector(s);
+/* ---------------- I18N ---------------- */
+let lang = localStorage.getItem('gp_lang') || 'ar';
+const I18N = {
+  ar: {
+    login:'تسجيل الدخول', tabBrush:'الفرش', tabPalette:'الألوان', tabReference:'المراجع', tabCommunity:'المجتمع',
+    searchPh:'ابحث بالاسم أو الوسم...', footer:'GO Paint : Drawing accessories — المصادر منشورة تحت كل عنصر. جميع الفرش والصور محفوظة الحقوق لأصحابها الأصليين.',
+    authSub:'سجّل دخولك لتنشر أعمالك وتتفاعل مع المجتمع', authUsernameLabel:'اسم المستخدم', authEmailLabel:'البريد الإلكتروني', authPasswordLabel:'كلمة السر',
+    orDivider:'أو', googleContinue:'المتابعة عبر Google',
+    authLoginTitle:'تسجيل الدخول', authSignupTitle:'إنشاء حساب', authLoginBtn:'دخول', authSignupBtn:'إنشاء الحساب',
+    authNoAccount:'ليس لديك حساب؟', authHaveAccount:'لديك حساب بالفعل؟', authCreateLink:'أنشئ حساباً', authSigninLink:'سجّل الدخول',
+    statFollowers:'متابعون', statLikes:'إعجابات', statDownloads:'تنزيلات',
+    accMyPosts:'منشوراتي', sSettings:'الإعدادات', accLogout:'تسجيل الخروج',
+    settingsTitle:'الإعدادات', sLang:'اللغة', sAccount:'حسابي', sVerify:'التوثيق', sAbout:'عن التطبيق',
+    like:'إعجاب', save:'حفظ', share:'مشاركة', comment:'تعليق', follow:'متابعة', following:'متابَع',
+    heroBrush:['مكتبتك الشاملة لكل أدوات الرسم الرقمي','اضغط على أي صورة لتكبيرها ومسح رمز QR الموجود بداخلها مباشرة.'],
+    heroPalette:['لوحات ألوان جاهزة','اضغط على الصورة لتكبيرها ومسح رمز QR لاستيراد اللوحة مباشرة.'],
+    heroReference:['مراجع للرسم','عيون، ملامح، وهياكل جسم لتطوير مهاراتك — المصادر مذكورة تحت كل صورة.'],
+    heroCommunity:['مجتمع الرسامين','شارك أعمالك، وتفاعل مع رسامين آخرين حول العالم.'],
+    emptyBrush:'لا توجد فرش بعد', emptyPalette:'لا توجد لوحات ألوان بعد', emptyReference:'لا توجد مراجع بعد',
+    emptyCommunity:'لا توجد منشورات بعد', emptyCommunitySub:'كن أول من يشارك عمله مع المجتمع!', emptySub:'ترقّب الإضافات القادمة قريباً'
+  },
+  en: {
+    login:'Log In', tabBrush:'Brushes', tabPalette:'Palettes', tabReference:'References', tabCommunity:'Community',
+    searchPh:'Search by name or tag...', footer:'GO Paint : Drawing accessories — Sources are listed under every item. All brushes and images remain the property of their original owners.',
+    authSub:'Sign in to publish your work and interact with the community', authUsernameLabel:'Username', authEmailLabel:'Email', authPasswordLabel:'Password',
+    orDivider:'or', googleContinue:'Continue with Google',
+    authLoginTitle:'Log In', authSignupTitle:'Create Account', authLoginBtn:'Log In', authSignupBtn:'Create Account',
+    authNoAccount:"Don't have an account?", authHaveAccount:'Already have an account?', authCreateLink:'Create one', authSigninLink:'Log in',
+    statFollowers:'Followers', statLikes:'Likes', statDownloads:'Downloads',
+    accMyPosts:'My Posts', sSettings:'Settings', accLogout:'Log Out',
+    settingsTitle:'Settings', sLang:'Language', sAccount:'Account', sVerify:'Verification', sAbout:'About',
+    like:'Like', save:'Save', share:'Share', comment:'Comment', follow:'Follow', following:'Following',
+    heroBrush:['Your complete library for every digital drawing tool','Tap any image to zoom in and scan the QR code inside it directly.'],
+    heroPalette:['Ready-made color palettes','Tap the image to zoom in and scan the QR code to import the palette.'],
+    heroReference:['Drawing references','Eyes, facial features, and body structure to level up your skills — sources listed under each image.'],
+    heroCommunity:['Artists community','Share your work and connect with other artists around the world.'],
+    emptyBrush:'No brushes yet', emptyPalette:'No color palettes yet', emptyReference:'No references yet',
+    emptyCommunity:'No posts yet', emptyCommunitySub:'Be the first to share your work with the community!', emptySub:'More additions coming soon'
+  }
+};
+function T(key){ return (I18N[lang] && I18N[lang][key]) || I18N.ar[key] || key; }
+function applyLang(){
+  document.documentElement.setAttribute('lang', lang==='ar' ? 'ar' : 'en');
+  document.documentElement.setAttribute('dir', lang==='ar' ? 'rtl' : 'ltr');
+  document.querySelectorAll('[data-i18n]').forEach(el=> el.textContent = T(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=> el.placeholder = T(el.dataset.i18nPh));
+  if($('#authTitle')) $('#authTitle').textContent = authMode==='login' ? T('authLoginTitle') : T('authSignupTitle');
+  if($('#authSubmit') && !$('#authSubmit').disabled) $('#authSubmit').textContent = authMode==='login' ? T('authLoginBtn') : T('authSignupBtn');
+  if($('#authSwitchText')) $('#authSwitchText').textContent = authMode==='login' ? T('authNoAccount') : T('authHaveAccount');
+  if($('#authSwitch')) $('#authSwitch').textContent = authMode==='login' ? T('authCreateLink') : T('authSigninLink');
+  if(typeof HERO_TEXT !== 'undefined'){
+    HERO_TEXT.brush = I18N[lang].heroBrush; HERO_TEXT.palette = I18N[lang].heroPalette;
+    HERO_TEXT.reference = I18N[lang].heroReference; HERO_TEXT.community = I18N[lang].heroCommunity;
+  }
+  if(typeof activeTab !== 'undefined' && $('#heroTitle')){
+    const [ht, hd] = HERO_TEXT[activeTab]; $('#heroTitle').textContent = ht; $('#heroText').textContent = hd;
+  }
+}
+
 const $$ = s => document.querySelectorAll(s);
 
 function toast(msg){
@@ -521,10 +619,10 @@ $$('[data-close]').forEach(b=> b.addEventListener('click', ()=>closeModal(b.data
 $$('.overlay').forEach(o=> o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); }));
 
 const HERO_TEXT = {
-  brush: ["مكتبة فرش iBis Paint", "اضغط على أي صورة لتكبيرها ومسح رمز QR الموجود بداخلها مباشرة."],
-  palette: ["لوحات ألوان جاهزة", "اضغط على الصورة لتكبيرها ومسح رمز QR لاستيراد اللوحة مباشرة."],
-  reference: ["مراجع للرسم", "عيون، ملامح، وهياكل جسم لتطوير مهاراتك — المصادر مذكورة تحت كل صورة."],
-  community: ["مجتمع الرسامين", "شارك أعمالك، وتفاعل مع رسامين آخرين حول العالم."]
+  brush: I18N[lang].heroBrush,
+  palette: I18N[lang].heroPalette,
+  reference: I18N[lang].heroReference,
+  community: I18N[lang].heroCommunity
 };
 
 /* ---------------- AUTH ---------------- */
@@ -546,23 +644,23 @@ async function refreshSession(){
 function renderAuthArea(){
   const el = $('#authArea');
   if(currentUser && currentProfile){
-    const isAdmin = currentProfile.role==='admin';
-    el.innerHTML = `<button class="avatar-btn" id="avatarBtn">${(currentProfile.username||'U')[0].toUpperCase()}${isAdmin?`<span class="avatar-badge">${verifiedBadge()}</span>`:''}</button>`;
+    const isAdmin = currentProfile.role==='admin' || currentProfile.is_verified;
+    el.innerHTML = `<button class="avatar-btn" id="avatarBtn">${currentProfile.avatar_url?`<img src="${currentProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(currentProfile.username||'U')[0].toUpperCase()}${isAdmin?`<span class="avatar-badge">${verifiedBadge()}</span>`:''}</button>`;
     $('#avatarBtn').addEventListener('click', async ()=>{
       $('#accName').innerHTML = escapeHtml(currentProfile.display_name || currentProfile.username) + (isAdmin?verifiedBadge():'');
-      $('#accRole').textContent = currentProfile.role==='admin' ? 'مسؤول' : (currentProfile.role==='artist'?'فنان':'مستخدم');
+      $('#accRole').textContent = currentProfile.role==='admin' ? (lang==='ar'?'مسؤول':'Admin') : (currentProfile.is_verified?(lang==='ar'?'موثّق':'Verified'):(lang==='ar'?'مستخدم':'User'));
       openModal('accountOverlay');
       const grid = $('#accStats');
       grid.innerHTML = `
-        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>متابعون</span></div>
-        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>إعجابات</span></div>
-        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>تنزيلات</span></div>`;
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>${T('statFollowers')}</span></div>
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>${T('statLikes')}</span></div>
+        <div class="stat-cell"><b><span class="spinner dark"></span></b><span>${T('statDownloads')}</span></div>`;
       const { data, error } = await sb.rpc('profile_stats', { uid: currentUser.id });
       const s = (!error && data && data[0]) ? data[0] : { followers:0, total_likes:0, total_downloads:0 };
       grid.innerHTML = `
-        <div class="stat-cell"><b>${s.followers}</b><span>متابعون</span></div>
-        <div class="stat-cell"><b>${s.total_likes}</b><span>إعجابات</span></div>
-        <div class="stat-cell"><b>${s.total_downloads}</b><span>تنزيلات</span></div>`;
+        <div class="stat-cell"><b>${s.followers}</b><span>${T('statFollowers')}</span></div>
+        <div class="stat-cell"><b>${s.total_likes}</b><span>${T('statLikes')}</span></div>
+        <div class="stat-cell"><b>${s.total_downloads}</b><span>${T('statDownloads')}</span></div>`;
     });
   } else {
     el.innerHTML = `<button class="btn btn-ghost" id="loginBtn">تسجيل الدخول</button>`;
@@ -572,11 +670,11 @@ function renderAuthArea(){
 $('#authSwitch').addEventListener('click', e=>{
   e.preventDefault();
   authMode = authMode==='login' ? 'signup' : 'login';
-  $('#authTitle').textContent = authMode==='login' ? 'تسجيل الدخول' : 'إنشاء حساب';
-  $('#authSubmit').textContent = authMode==='login' ? 'دخول' : 'إنشاء الحساب';
+  $('#authTitle').textContent = authMode==='login' ? T('authLoginTitle') : T('authSignupTitle');
+  $('#authSubmit').textContent = authMode==='login' ? T('authLoginBtn') : T('authSignupBtn');
   $('#usernameField').style.display = authMode==='signup' ? 'block' : 'none';
-  $('#authSwitchText').textContent = authMode==='login' ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟';
-  $('#authSwitch').textContent = authMode==='login' ? 'أنشئ حساباً' : 'سجّل الدخول';
+  $('#authSwitchText').textContent = authMode==='login' ? T('authNoAccount') : T('authHaveAccount');
+  $('#authSwitch').textContent = authMode==='login' ? T('authCreateLink') : T('authSigninLink');
 });
 $('#pwToggle').addEventListener('click', ()=>{
   const inp = $('#authPassword');
@@ -631,6 +729,140 @@ $('#myPostsBtn').addEventListener('click', ()=>{
   closeModal('accountOverlay'); switchTab('community', true);
 });
 
+/* ---------------- SETTINGS ---------------- */
+let settingsTab = 'lang';
+$('#settingsBtn').addEventListener('click', ()=>{
+  closeModal('accountOverlay'); openModal('settingsOverlay'); renderSettingsPanel();
+});
+$$('#settingsTabs button').forEach(b=> b.addEventListener('click', ()=>{
+  $$('#settingsTabs button').forEach(x=>x.classList.toggle('active', x===b));
+  settingsTab = b.dataset.s; renderSettingsPanel();
+}));
+
+function renderSettingsPanel(){
+  const p = $('#settingsPanel');
+  if(settingsTab==='lang') return renderLangPanel(p);
+  if(settingsTab==='account') return renderAccountPanel(p);
+  if(settingsTab==='verify') return renderVerifyPanel(p);
+  if(settingsTab==='about') return renderAboutPanel(p);
+}
+
+function renderLangPanel(p){
+  p.innerHTML = `
+    <div class="lang-switch">
+      <div class="lang-opt ${lang==='ar'?'active':''}" data-l="ar">العربية</div>
+      <div class="lang-opt ${lang==='en'?'active':''}" data-l="en">English</div>
+    </div>`;
+  p.querySelectorAll('.lang-opt').forEach(el=> el.addEventListener('click', ()=>{
+    lang = el.dataset.l; localStorage.setItem('gp_lang', lang);
+    applyLang(); switchTab(activeTab); renderSettingsPanel();
+  }));
+}
+
+function renderAccountPanel(p){
+  const av = currentProfile.avatar_url ? `<img src="${currentProfile.avatar_url}">` : (currentProfile.username||'U')[0].toUpperCase();
+  p.innerHTML = `
+    <div class="avatar-edit">
+      <div class="big-avatar" id="avatarPreview">${av}</div>
+      <div style="flex:1;">
+        <input type="file" accept="image/*" id="avatarFile">
+      </div>
+    </div>
+    <div class="field"><label>${lang==='ar'?'اسم المستخدم':'Username'}</label><input id="editUsername" value="${escapeHtml(currentProfile.username||'')}"></div>
+    <div class="field"><label>${lang==='ar'?'الاسم المعروض':'Display name'}</label><input id="editDisplayName" value="${escapeHtml(currentProfile.display_name||'')}"></div>
+    <div id="accEditMsg"></div>
+    <button class="btn btn-primary" id="saveAccountBtn" style="width:100%">${lang==='ar'?'حفظ التغييرات':'Save changes'}</button>
+  `;
+  $('#avatarFile').addEventListener('change', async e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const path = `avatars/${currentUser.id}-${Date.now()}-${file.name}`;
+    const { error: upErr } = await sb.storage.from('content-media').upload(path, file);
+    if(upErr){ $('#accEditMsg').innerHTML = `<div class="msg err">${upErr.message}</div>`; return; }
+    const url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
+    await sb.from('profiles').update({ avatar_url: url }).eq('id', currentUser.id);
+    currentProfile.avatar_url = url;
+    $('#avatarPreview').innerHTML = `<img src="${url}">`;
+    renderAuthArea();
+    toast(lang==='ar'?'تم تحديث الصورة':'Photo updated');
+  });
+  $('#saveAccountBtn').addEventListener('click', async ()=>{
+    const username = $('#editUsername').value.trim();
+    const display_name = $('#editDisplayName').value.trim() || null;
+    const msg = $('#accEditMsg'); msg.innerHTML='';
+    if(!username){ msg.innerHTML = `<div class="msg err">${lang==='ar'?'اسم المستخدم مطلوب':'Username is required'}</div>`; return; }
+    const { error } = await sb.from('profiles').update({ username, display_name }).eq('id', currentUser.id);
+    if(error){ msg.innerHTML = `<div class="msg err">${error.message}</div>`; return; }
+    currentProfile.username = username; currentProfile.display_name = display_name;
+    msg.innerHTML = `<div class="msg ok">${lang==='ar'?'تم الحفظ':'Saved'}</div>`;
+    renderAuthArea();
+  });
+}
+
+async function renderVerifyPanel(p){
+  p.innerHTML = `<div style="text-align:center;padding:20px;"><span class="spinner dark"></span></div>`;
+  const [{ data: statsData }, { count: postsCount }, { data: existing }] = await Promise.all([
+    sb.rpc('profile_stats', { uid: currentUser.id }),
+    sb.from('content_items').select('*', { count:'exact', head:true }).eq('artist_id', currentUser.id).eq('status','approved'),
+    sb.from('verification_requests').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(1)
+  ]);
+  const s = (statsData && statsData[0]) || { followers:0, total_likes:0 };
+  const followers = s.followers||0, likes = s.total_likes||0, posts = postsCount||0;
+  const reqFollowers = followers>=10, reqLikes = likes>=20, reqPosts = posts>=5;
+  const last = existing && existing[0];
+  const isVerifiedAlready = currentProfile.is_verified;
+  const arabic = lang==='ar';
+  let statusHtml = '';
+  if(isVerifiedAlready){
+    statusHtml = `<div class="msg ok">${arabic?'حسابك موثّق بالفعل ✓':'Your account is already verified ✓'}</div>`;
+  } else if(last && last.status==='pending'){
+    statusHtml = `<div class="msg" style="background:var(--surface-2);color:var(--ink-soft);">${arabic?'طلبك قيد المراجعة حالياً':'Your request is currently under review'}</div>`;
+  } else if(last && last.status==='rejected'){
+    statusHtml = `<div class="msg err">${arabic?'تم رفض طلبك السابق':'Your previous request was rejected'}${last.admin_note?(': '+escapeHtml(last.admin_note)):''}</div>`;
+  }
+  p.innerHTML = `
+    ${statusHtml}
+    <ul class="req-list">
+      <li class="${reqFollowers?'met':''}"><i class="ph ${reqFollowers?'ph-fill ph-check-circle':'ph-circle'}"></i> ${arabic?`10+ متابعين (لديك ${followers})`:`10+ followers (you have ${followers})`}</li>
+      <li class="${reqLikes?'met':''}"><i class="ph ${reqLikes?'ph-fill ph-check-circle':'ph-circle'}"></i> ${arabic?`20+ إعجاب (لديك ${likes})`:`20+ likes (you have ${likes})`}</li>
+      <li class="${reqPosts?'met':''}"><i class="ph ${reqPosts?'ph-fill ph-check-circle':'ph-circle'}"></i> ${arabic?`5+ منشورات مقبولة (لديك ${posts})`:`5+ approved posts (you have ${posts})`}</li>
+    </ul>
+    ${(!isVerifiedAlready && (!last || last.status!=='pending')) ? `
+      <div class="field"><label>${arabic?'سبب طلب التوثيق':'Reason for requesting verification'}</label><textarea id="verifyReason" placeholder="${arabic?'اكتب لماذا تستحق التوثيق...':'Explain why you deserve verification...'}"></textarea></div>
+      <div id="verifyMsg"></div>
+      <button class="btn btn-primary" id="submitVerifyBtn" style="width:100%">${arabic?'إرسال طلب التوثيق':'Submit verification request'}</button>
+    ` : ''}
+  `;
+  const btn = $('#submitVerifyBtn');
+  if(btn) btn.addEventListener('click', async ()=>{
+    const reason = $('#verifyReason').value.trim();
+    const msg = $('#verifyMsg');
+    if(!reason){ msg.innerHTML = `<div class="msg err">${arabic?'الرجاء كتابة السبب':'Please write a reason'}</div>`; return; }
+    const { error } = await sb.from('verification_requests').insert({
+      user_id: currentUser.id, reason, followers_at_request: followers, likes_at_request: likes, posts_at_request: posts
+    });
+    if(error){ msg.innerHTML = `<div class="msg err">${error.message}</div>`; return; }
+    msg.innerHTML = `<div class="msg ok">${arabic?'تم إرسال طلبك بنجاح':'Your request was submitted'}</div>`;
+    setTimeout(()=> renderVerifyPanel(p), 1000);
+  });
+}
+
+function renderAboutPanel(p){
+  const arabic = lang==='ar';
+  p.innerHTML = `
+    <div style="text-align:center;padding:10px 0 18px;">
+      <div class="brand-mark" style="width:52px;height:52px;font-size:24px;margin:0 auto 10px;"><i class="ph-fill ph-palette"></i></div>
+      <h3 style="margin:0;">GO Paint</h3>
+      <p class="sub" style="margin:4px 0 0;">Drawing accessories</p>
+    </div>
+    <p style="color:var(--ink-soft);font-size:14px;line-height:1.8;">
+      ${arabic
+        ? 'مكتبتك الشاملة لأدوات الرسم الرقمي: فرش iBis Paint، لوحات ألوان، ومراجع للرسم (عيون، ملامح، هياكل جسم)، بالإضافة إلى مجتمع للرسامين لمشاركة أعمالهم والتفاعل معاً.'
+        : 'Your complete library for digital drawing tools: iBis Paint brushes, color palettes, and drawing references (eyes, facial features, body structure), plus a community for artists to share their work and connect.'}
+    </p>
+    <p style="color:var(--ink-faint);font-size:12.5px;margin-top:16px;">Version 1.0</p>
+  `;
+}
+
 sb.auth.onAuthStateChange((_e, _s)=> refreshSession());
 
 /* ---------------- TABS ---------------- */
@@ -653,15 +885,25 @@ function renderSkeleton(){
     c.innerHTML = '<div class="grid">' + Array(6).fill(`<div class="card"><div class="skeleton" style="aspect-ratio:1/1;"></div><div style="padding:14px;"><div class="skeleton" style="height:13px;width:70%;border-radius:6px;"></div></div></div>`).join('') + '</div>';
   }
 }
+let tabCache = {};
 async function loadItems(mineOnly){
-  renderSkeleton();
+  const cacheKey = mineOnly ? 'mine' : activeTab;
+  if(tabCache[cacheKey] && !mineOnly){
+    items = tabCache[cacheKey];
+    allTags = new Set();
+    items.forEach(it => (it.tags||[]).forEach(t=>allTags.add(t)));
+    renderTagScroll();
+    renderItems();
+  } else {
+    renderSkeleton();
+  }
   const type = activeTab==='community' ? null : activeTab;
-  let q = sb.from('content_items').select('*, artist:profiles!content_items_artist_id_fkey(username, role)').order('created_at', {ascending:false});
+  let q = sb.from('content_items').select('*, artist:profiles!content_items_artist_id_fkey(username, role, is_verified)').order('created_at', {ascending:false});
   if(type) q = q.eq('type', type);
   if(mineOnly && currentUser) q = q.eq('artist_id', currentUser.id);
   else q = q.eq('status','approved');
   const { data, error } = await q;
-  if(error){ console.error(error); items=[]; } else { items = data||[]; }
+  if(error){ console.error(error); if(!tabCache[cacheKey]) items=[]; } else { items = data||[]; if(!mineOnly) tabCache[cacheKey] = items; }
   allTags = new Set();
   items.forEach(it => (it.tags||[]).forEach(t=>allTags.add(t)));
   renderTagScroll();
@@ -688,7 +930,11 @@ function renderTagScroll(){
     renderTagScroll(); renderItems();
   }));
 }
-$('#searchInput').addEventListener('input', renderItems);
+let searchDebounce;
+$('#searchInput').addEventListener('input', ()=>{
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(renderItems, 220);
+});
 
 function filteredItems(){
   const q = $('#searchInput').value.trim().toLowerCase();
@@ -706,13 +952,13 @@ function renderItems(){
   if(activeTab==='community'){
     c.innerHTML = `<div class="feed" id="feed"></div>`;
     const feed = $('#feed');
-    if(list.length===0){ feed.innerHTML = emptyState('لا توجد منشورات بعد','كن أول من يشارك عمله مع المجتمع!'); return; }
+    if(list.length===0){ feed.innerHTML = emptyState(T('emptyCommunity'), T('emptyCommunitySub')); return; }
     feed.innerHTML = list.map(postCard).join('');
     feed.querySelectorAll('.post').forEach((el,i)=>{ el.classList.add('stagger-in'); el.style.animationDelay = Math.min(i*70,350)+'ms'; });
     list.forEach(it=> wirePost(it));
   } else {
     if(list.length===0){
-      c.innerHTML = `<div class="grid">${emptyState(emptyTitle(activeTab), 'ترقّب الإضافات القادمة قريباً')}</div>`;
+      c.innerHTML = `<div class="grid">${emptyState(emptyTitle(activeTab), T('emptySub'))}</div>`;
       return;
     }
     c.innerHTML = `<div class="grid">${list.map(gridCard).join('')}</div>`;
@@ -721,7 +967,7 @@ function renderItems(){
   }
 }
 function emptyTitle(tab){
-  return {brush:'لا توجد فرش بعد', palette:'لا توجد لوحات ألوان بعد', reference:'لا توجد مراجع بعد'}[tab];
+  return {brush:T('emptyBrush'), palette:T('emptyPalette'), reference:T('emptyReference')}[tab];
 }
 function emptyState(title, sub){
   return `<div class="empty-state"><b>${title}</b>${sub}</div>`;
@@ -740,9 +986,9 @@ function gridCard(it){
       ${it.source_name ? `<span class="card-source">المصدر: ${escapeHtml(it.source_name)}</span>` : ''}
       <div class="card-tags">${(it.tags||[]).slice(0,4).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
       <div class="card-actions">
-        <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> ${it.likes_count||0}</button>
-        <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> حفظ</button>
-        <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> مشاركة</button>
+        <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> <span class="like-count">${it.likes_count||0}</span></button>
+        <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> ${T('save')}</button>
+        <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> ${T('share')}</button>
       </div>
     </div>
   </div>`;
@@ -750,7 +996,7 @@ function gridCard(it){
 function postCard(it){
   const liked = myLikes.has(it.id), saved = mySaves.has(it.id);
   const uname = it.artist ? it.artist.username : 'GO Paint';
-  const isAdmin = it.artist && it.artist.role==='admin';
+  const isAdmin = it.artist && (it.artist.role==='admin' || it.artist.is_verified);
   const isMine = currentUser && it.artist_id === currentUser.id;
   const following = myFollowing.has(it.artist_id);
   return `
@@ -758,7 +1004,7 @@ function postCard(it){
     <div class="post-head">
       <div class="post-avatar">${uname[0].toUpperCase()}</div>
       <div style="flex:1;"><div class="post-user">${escapeHtml(uname)}${isAdmin?verifiedBadge():''}</div><div class="post-type">${typeLabel(it.type)} ${it.subcategory?('· '+it.subcategory):''}</div></div>
-      ${(!isMine && it.artist_id) ? `<button class="follow-btn ${following?'following':''}" data-artist="${it.artist_id}">${following?'متابَع':'متابعة'}</button>` : ''}
+      ${(!isMine && it.artist_id) ? `<button class="follow-btn ${following?'following':''}" data-artist="${it.artist_id}">${following?T('following'):T('follow')}</button>` : ''}
     </div>
     ${it.image_url ? `<img class="post-media" data-id="${it.id}" src="${it.image_url}" loading="lazy" style="cursor:pointer;">` : ''}
     <div class="post-body">
@@ -768,10 +1014,10 @@ function postCard(it){
       <div class="card-tags">${(it.tags||[]).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
     </div>
     <div class="post-actions">
-      <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> إعجاب (${it.likes_count||0})</button>
-      <button class="icon-btn comment-toggle" data-id="${it.id}"><i class="ph ph-chat-circle-dots"></i> تعليق (${it.comments_count||0})</button>
-      <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> حفظ</button>
-      <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> مشاركة</button>
+      <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> ${T('like')} (<span class="like-count">${it.likes_count||0}</span>)</button>
+      <button class="icon-btn comment-toggle" data-id="${it.id}"><i class="ph ph-chat-circle-dots"></i> ${T('comment')} (<span class="comment-count">${it.comments_count||0}</span>)</button>
+      <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> ${T('save')}</button>
+      <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> ${T('share')}</button>
     </div>
     <div class="comments-box" id="comments-${it.id}">
       <div class="comment-list" id="commentList-${it.id}"></div>
@@ -797,6 +1043,13 @@ function wirePost(it){
   const f = document.querySelector(`.post[data-id="${it.id}"] .follow-btn`);
   if(f) f.addEventListener('click', ()=> toggleFollow(f.dataset.artist));
 }
+function updateFollowButtons(artistId){
+  const following = myFollowing.has(artistId);
+  document.querySelectorAll(`.follow-btn[data-artist="${artistId}"]`).forEach(b=>{
+    b.classList.toggle('following', following);
+    b.textContent = following ? T('following') : T('follow');
+  });
+}
 async function toggleFollow(artistId){
   if(!currentUser){ openModal('authOverlay'); return; }
   if(myFollowing.has(artistId)){
@@ -807,11 +1060,14 @@ async function toggleFollow(artistId){
     myFollowing.add(artistId);
     toast('تمت المتابعة');
   }
-  renderItems();
+  updateFollowButtons(artistId);
 }
 function showMediaModal(it){
   $('#mediaModalTitle').textContent = it.title;
-  $('#mediaModalImg').src = it.image_url || '';
+  const img = $('#mediaModalImg');
+  img.style.opacity = 0; img.classList.add('skeleton');
+  img.onload = ()=>{ img.style.opacity = 1; img.classList.remove('skeleton'); };
+  img.src = it.image_url || '';
   $('#mediaModalSource').textContent = it.source_name ? ('المصدر: '+it.source_name) : '';
   const dl = $('#mediaDownloadBtn');
   dl.href = it.image_url || '#';
@@ -842,6 +1098,24 @@ function spawnBurst(btn){
     setTimeout(()=>p.remove(), 600);
   }
 }
+function updateLikeButtons(it){
+  const liked = myLikes.has(it.id);
+  document.querySelectorAll(`.like-btn[data-id="${it.id}"]`).forEach(b=>{
+    b.classList.toggle('liked', liked);
+    const icon = b.querySelector('.heart-glyph i');
+    if(icon) icon.className = (liked?'ph-fill':'ph') + ' ph-heart';
+    const cnt = b.querySelector('.like-count');
+    if(cnt) cnt.textContent = it.likes_count||0;
+  });
+}
+function updateSaveButtons(it){
+  const saved = mySaves.has(it.id);
+  document.querySelectorAll(`.save-btn[data-id="${it.id}"]`).forEach(b=>{
+    b.classList.toggle('saved', saved);
+    const icon = b.querySelector('i');
+    if(icon) icon.className = (saved?'ph-fill':'ph') + ' ph-bookmark-simple';
+  });
+}
 async function toggleLike(it, btn){
   if(!currentUser){ openModal('authOverlay'); return; }
   const wasLiked = myLikes.has(it.id);
@@ -853,7 +1127,7 @@ async function toggleLike(it, btn){
     myLikes.add(it.id); it.likes_count = (it.likes_count||0)+1;
     spawnBurst(btn);
   }
-  renderItems();
+  updateLikeButtons(it);
 }
 async function toggleSave(it){
   if(!currentUser){ openModal('authOverlay'); return; }
@@ -864,15 +1138,15 @@ async function toggleSave(it){
     await sb.from('saves').insert({ user_id: currentUser.id, content_id: it.id });
     mySaves.add(it.id);
   }
-  renderItems();
+  updateSaveButtons(it);
 }
 async function toggleComments(id){
   const box = document.getElementById('comments-'+id);
   box.classList.toggle('open');
   if(box.classList.contains('open')){
-    const { data } = await sb.from('comments').select('*, author:profiles(username, role)').eq('content_id', id).order('created_at');
+    const { data } = await sb.from('comments').select('*, author:profiles(username, role, is_verified)').eq('content_id', id).order('created_at');
     document.getElementById('commentList-'+id).innerHTML = (data||[]).map(c=>
-      `<div class="comment-row"><b>${escapeHtml(c.author?.username||'user')}${c.author?.role==='admin'?verifiedBadge():''}:</b> ${escapeHtml(c.body)}</div>`
+      `<div class="comment-row"><b>${escapeHtml(c.author?.username||'user')}${(c.author?.role==='admin'||c.author?.is_verified)?verifiedBadge():''}:</b> ${escapeHtml(c.body)}</div>`
     ).join('') || '<p style="color:var(--ink-faint);font-size:13px;">لا تعليقات بعد</p>';
   }
 }
@@ -883,8 +1157,17 @@ async function postComment(id){
   if(!body) return;
   await sb.from('comments').insert({ content_id:id, user_id: currentUser.id, body });
   input.value='';
-  const it = items.find(i=>i.id===id); if(it) it.comments_count=(it.comments_count||0)+1;
-  toggleComments(id); toggleComments(id);
+  const it = items.find(i=>i.id===id);
+  if(it){
+    it.comments_count = (it.comments_count||0)+1;
+    const cnt = document.querySelector(`.comment-toggle[data-id="${id}"] .comment-count`);
+    if(cnt) cnt.textContent = it.comments_count;
+  }
+  const box = document.getElementById('comments-'+id);
+  const { data } = await sb.from('comments').select('*, author:profiles(username, role, is_verified)').eq('content_id', id).order('created_at');
+  document.getElementById('commentList-'+id).innerHTML = (data||[]).map(c=>
+    `<div class="comment-row"><b>${escapeHtml(c.author?.username||'user')}${(c.author?.role==='admin'||c.author?.is_verified)?verifiedBadge():''}:</b> ${escapeHtml(c.body)}</div>`
+  ).join('') || '<p style="color:var(--ink-faint);font-size:13px;">لا تعليقات بعد</p>';
 }
 window.postComment = postComment;
 
@@ -929,6 +1212,7 @@ $('#submitItemBtn').addEventListener('click', async ()=>{
 /* ---------------- INIT ---------------- */
 (async function init(){
   const start = Date.now();
+  applyLang();
   await refreshSession();
   await loadItems();
   const elapsed = Date.now() - start;

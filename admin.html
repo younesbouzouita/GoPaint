@@ -88,6 +88,7 @@ h1,h2,h3{font-family:'Baloo 2',sans-serif;}
     <button data-t="all"><i class="ph ph-squares-four"></i> كل المحتوى</button>
     <button data-t="users"><i class="ph ph-users-three"></i> المستخدمون</button>
     <button data-t="add"><i class="ph ph-plus-circle"></i> إضافة مباشرة</button>
+    <button data-t="verify"><i class="ph-fill ph-seal-check"></i> طلبات التوثيق</button>
   </div>
   <div id="panel"></div>
 </div>
@@ -167,7 +168,44 @@ async function renderTab(){
   } else if(tab==='add'){
     panel.innerHTML = addForm();
     wireAddForm();
+  } else if(tab==='verify'){
+    const { data, error } = await sb.from('verification_requests').select('*, requester:profiles(username, is_verified)').order('created_at',{ascending:false});
+    if(error){ panel.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(error.message)}</div>`; return; }
+    panel.innerHTML = (data&&data.length) ? data.map(verifyRow).join('') : `<div class="empty"><i class="ph-fill ph-seal-check"></i>لا توجد طلبات توثيق.</div>`;
+    data && data.forEach(v=> wireVerifyRow(v));
   }
+}
+
+function verifyRow(v){
+  const uname = v.requester ? v.requester.username : '—';
+  return `<div class="card" id="vrow-${v.id}">
+    <div class="meta">
+      <b>${esc(uname)}</b> <span class="badge ${v.status}">${v.status}</span>
+      <div class="sub">متابعون: ${v.followers_at_request} · إعجابات: ${v.likes_at_request} · منشورات: ${v.posts_at_request}</div>
+      <div class="sub" style="margin-top:6px;color:var(--ink);">"${esc(v.reason)}"</div>
+      <div class="actions">
+        ${v.status!=='approved'?`<button class="btn btn-ok" data-act="approve" data-id="${v.id}" data-uid="${v.user_id}"><i class="ph-fill ph-check-circle"></i> قبول وتوثيق</button>`:''}
+        ${v.status!=='rejected'?`<button class="btn btn-bad" data-act="reject" data-id="${v.id}"><i class="ph ph-x-circle"></i> رفض</button>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+function wireVerifyRow(v){
+  const row = document.getElementById('vrow-'+v.id); if(!row) return;
+  row.querySelectorAll('button[data-act]').forEach(b=> b.addEventListener('click', async ()=>{
+    const act = b.dataset.act;
+    let error = null;
+    if(act==='approve'){
+      ({ error } = await sb.from('verification_requests').update({ status:'approved' }).eq('id', v.id));
+      if(!error) ({ error } = await sb.from('profiles').update({ is_verified:true }).eq('id', b.dataset.uid));
+    }
+    if(act==='reject'){
+      const note = prompt('سبب الرفض (اختياري):') || null;
+      ({ error } = await sb.from('verification_requests').update({ status:'rejected', admin_note:note }).eq('id', v.id));
+    }
+    if(error){ alert(error.message); return; }
+    renderTab();
+  }));
 }
 
 function itemRow(it){
