@@ -261,11 +261,13 @@ async function toggleBan(u){
 function addForm(){
   return `<div class="card">
     <div class="field"><label>النوع</label>
-      <select id="aType"><option value="brush">فرشاة</option><option value="palette">ألوان</option><option value="reference">مرجع</option></select>
+      <select id="aType"><option value="brush">فرشاة</option><option value="palette">ألوان</option><option value="reference">مرجع</option><option value="announcement">نص / إعلان</option></select>
     </div>
     <div class="field"><label>العنوان</label><input id="aTitle"></div>
-    <div class="field"><label>الوصف</label><textarea id="aDesc"></textarea></div>
-    <div class="field"><label>صورة كاملة (تحتوي على QR والمعاينة)</label><input type="file" id="aImage" accept="image/*"></div>
+    <div class="field"><label>النص / الوصف</label><textarea id="aDesc" rows="4"></textarea></div>
+    <div class="field"><label>صورة (اختياري)</label><input type="file" id="aImage" accept="image/*"></div>
+    <div class="field"><label>ملف مرفق — أي نوع (اختياري)</label><input type="file" id="aFile"></div>
+    <div class="field"><label>أو رابط خارجي (اختياري)</label><input id="aLink" placeholder="https://..."></div>
     <div class="field"><label>المصدر</label><input id="aSource" placeholder="Pinterest"></div>
     <div class="field"><label>وسوم (فاصلة)</label><input id="aTags"></div>
     <div id="addMsg"></div>
@@ -278,16 +280,24 @@ function wireAddForm(){
     const title = $('#aTitle').value.trim();
     if(!title){ msg.innerHTML = '<div class="msg err"><i class="ph ph-warning-circle"></i> أدخل عنواناً</div>'; return; }
     let image_url = null;
-    const file = $('#aImage').files[0];
-    if(file){
-      const path = `admin/${Date.now()}-${file.name}`;
-      const { error: upErr } = await sb.storage.from('content-media').upload(path, file);
+    const img = $('#aImage').files[0];
+    if(img){
+      const path = `admin/${Date.now()}-${img.name}`;
+      const { error: upErr } = await sb.storage.from('content-media').upload(path, img);
       if(upErr){ msg.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(upErr.message)}</div>`; return; }
       image_url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
     }
+    let file_url = $('#aLink').value.trim() || null;
+    const attach = $('#aFile').files[0];
+    if(attach){
+      const path = `admin/files/${Date.now()}-${attach.name}`;
+      const { error: upErr } = await sb.storage.from('content-media').upload(path, attach);
+      if(upErr){ msg.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(upErr.message)}</div>`; return; }
+      file_url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
+    }
     const payload = {
       type: $('#aType').value, title, description: $('#aDesc').value.trim()||null,
-      artist_id: me.id, image_url,
+      artist_id: me.id, image_url, file_url,
       source_name: $('#aSource').value.trim()||null,
       tags: $('#aTags').value.split(',').map(t=>t.trim()).filter(Boolean),
       status: 'approved'

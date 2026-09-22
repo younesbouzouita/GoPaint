@@ -161,10 +161,11 @@ img{max-width:100%;display:block;}
 .btn-ghost{background:var(--surface-2); color:var(--ink);}
 .btn-ghost:hover{background:#e9e6fb;}
 .avatar-btn{
-  width:40px;height:40px;border-radius:50%;border:2px solid var(--surface);
+  width:46px;height:46px;border-radius:50%;border:2px solid var(--surface);
   background:var(--grad); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:15px; box-shadow:var(--shadow);
+  cursor:pointer; font-size:17px; box-shadow:var(--shadow); padding:0; overflow:hidden;
 }
+.avatar-btn img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 /* ---------- layout ---------- */
 .page{max-width:1180px; margin:0 auto; padding:26px 20px 80px;}
@@ -224,19 +225,26 @@ img{max-width:100%;display:block;}
 }
 .avatar-btn{ position:relative; }
 .avatar-badge{
-  position:absolute; bottom:-3px; left:-3px; background:var(--surface); border-radius:50%;
-  width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:12px;
-  box-shadow:0 0 0 2px var(--surface);
+  position:absolute; bottom:-2px; left:-2px; background:var(--surface); border-radius:50%;
+  width:15px; height:15px; display:flex; align-items:center; justify-content:center; font-size:9px;
+  box-shadow:0 0 0 2px var(--surface); z-index:2;
+}
+.avatar-badge .badge-verified{
+  background:none; -webkit-text-fill-color:var(--pink); color:var(--pink); filter:none; animation:none; margin:0;
 }
 .card-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1;}
 .card-title{font-weight:700; font-size:15px; margin:0;}
 .card-source{font-size:12px; color:var(--ink-faint); font-weight:600;}
+.attach-link{
+  display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; color:var(--blue);
+  text-decoration:none; background:var(--surface-2); padding:5px 11px; border-radius:999px; width:fit-content;
+}
 .card-tags{display:flex; gap:6px; flex-wrap:wrap;}
 .mini-tag{font-size:11px; background:var(--surface-2); color:var(--ink-soft); padding:3px 9px; border-radius:999px; font-weight:600;}
 .card-actions{display:flex; align-items:center; gap:4px; margin-top:auto; padding-top:8px; border-top:1px solid var(--line);}
 .icon-btn{
   border:none;background:none;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--ink-soft);
-  font-size:12.5px; font-weight:700; padding:7px 8px; border-radius:9px; flex:1; justify-content:center;
+  font-size:12.5px; font-weight:700; padding:7px 8px; border-radius:9px; flex:1; justify-content:center; white-space:nowrap;
 }
 .icon-btn{transition:background .18s, color .18s, transform .18s;}
 .icon-btn:hover{background:var(--surface-2); transform:translateY(-1px);}
@@ -328,6 +336,7 @@ img{max-width:100%;display:block;}
 .req-list i{ font-size:17px; }
 .req-list li.met i{ color:#1C7A43; }
 .req-list li:not(.met) i{ color:var(--ink-faint); }
+
 .field{margin-bottom:14px;}
 .field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--ink-soft);}
 .field input,.field select,.field textarea{
@@ -973,7 +982,7 @@ function emptyTitle(tab){
 function emptyState(title, sub){
   return `<div class="empty-state"><b>${title}</b>${sub}</div>`;
 }
-function typeLabel(t){ return {brush:'فرشاة',palette:'ألوان',reference:'مرجع',project:'مشروع'}[t]||t; }
+function typeLabel(t){ return {brush:'فرشاة',palette:'ألوان',reference:'مرجع',project:'مشروع',announcement:'إعلان'}[t]||t; }
 function verifiedBadge(){ return '<i class="ph-fill ph-seal-check badge-verified" title="حساب رسمي"></i>'; }
 
 function gridCard(it){
@@ -985,6 +994,7 @@ function gridCard(it){
     <div class="card-body">
       <p class="card-title">${escapeHtml(it.title)}</p>
       ${it.source_name ? `<span class="card-source">المصدر: ${escapeHtml(it.source_name)}</span>` : ''}
+      ${it.file_url ? `<a href="${it.file_url}" target="_blank" rel="noopener" class="attach-link"><i class="ph ph-paperclip"></i> ${lang==='ar'?'فتح المرفق':'Open attachment'}</a>` : ''}
       <div class="card-tags">${(it.tags||[]).slice(0,4).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
       <div class="card-actions">
         <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> <span class="like-count">${it.likes_count||0}</span></button>
@@ -1012,11 +1022,12 @@ function postCard(it){
       <p class="card-title">${escapeHtml(it.title)}</p>
       ${it.description ? `<p style="font-size:13.5px;color:var(--ink-soft);margin:2px 0 6px;">${escapeHtml(it.description)}</p>` : ''}
       ${it.source_name ? `<span class="card-source">المصدر: ${escapeHtml(it.source_name)}</span>` : ''}
+      ${it.file_url ? `<a href="${it.file_url}" target="_blank" rel="noopener" class="attach-link"><i class="ph ph-paperclip"></i> ${lang==='ar'?'فتح المرفق':'Open attachment'}</a>` : ''}
       <div class="card-tags">${(it.tags||[]).map(t=>`<span class="mini-tag">${escapeHtml(t)}</span>`).join('')}</div>
     </div>
     <div class="post-actions">
-      <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> ${T('like')} (<span class="like-count">${it.likes_count||0}</span>)</button>
-      <button class="icon-btn comment-toggle" data-id="${it.id}"><i class="ph ph-chat-circle-dots"></i> ${T('comment')} (<span class="comment-count">${it.comments_count||0}</span>)</button>
+      <button class="icon-btn like-btn ${liked?'liked':''}" data-id="${it.id}"><span class="heart-glyph"><i class="${liked?'ph-fill':'ph'} ph-heart"></i></span> <span class="like-count">${it.likes_count||0}</span></button>
+      <button class="icon-btn comment-toggle" data-id="${it.id}"><i class="ph ph-chat-circle-dots"></i> <span class="comment-count">${it.comments_count||0}</span></button>
       <button class="icon-btn save-btn ${saved?'saved':''}" data-id="${it.id}"><i class="${saved?'ph-fill':'ph'} ph-bookmark-simple"></i> ${T('save')}</button>
       <button class="icon-btn share-btn" data-id="${it.id}"><i class="ph ph-share-network"></i> ${T('share')}</button>
     </div>
