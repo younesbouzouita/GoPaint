@@ -1512,24 +1512,40 @@ function playSplashIntro(){
   const canvas = document.getElementById('splashCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  const images = SPLASH_FRAMES_B64.map(b64 => { const im = new Image(); im.src = 'data:image/png;base64,'+b64; return im; });
-  const total = images.length;
+  const total = SPLASH_FRAMES_B64.length;
   const fps = 24;
   let idx = 0;
-  const audio = document.getElementById('splashAudio');
-  if(audio){
-    audio.currentTime = 0;
-    const p = audio.play();
-    if(p && p.catch) p.catch(()=>{ /* autoplay with sound blocked by browser until user interacts */ });
+  const imageCache = new Array(total);
+  function getImage(i){
+    if(imageCache[i]) return imageCache[i];
+    const im = new Image();
+    im.src = 'data:image/png;base64,' + SPLASH_FRAMES_B64[i];
+    imageCache[i] = im;
+    return im;
   }
+  const audio = document.getElementById('splashAudio');
   function drawFrame(){
-    const im = images[idx];
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(im && im.complete) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+    const im = getImage(idx);
+    if(im.complete && im.naturalWidth>0){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+    }
+    // stay a couple frames ahead in the decode queue without loading all 144 at once
+    if(idx+3 < total) getImage(idx+3);
     idx++;
     if(idx < total){ setTimeout(()=>requestAnimationFrame(drawFrame), 1000/fps); }
   }
-  requestAnimationFrame(drawFrame);
+  function start(){
+    if(audio){
+      audio.currentTime = 0;
+      const p = audio.play();
+      if(p && p.catch) p.catch(()=>{ /* autoplay with sound blocked by browser until user interacts */ });
+    }
+    requestAnimationFrame(drawFrame);
+  }
+  const first = getImage(0);
+  if(first.complete && first.naturalWidth>0) start();
+  else { first.onload = start; first.onerror = start; }
 }
 function hideSplashAfterDelay(delayMs){
   setTimeout(()=>{
