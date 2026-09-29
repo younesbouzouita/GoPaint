@@ -118,6 +118,33 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let me = null, meProfile = null, tab='posts';
 const $=s=>document.querySelector(s);
 const esc=s=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function safeFileName(name){
+  name = name || '';
+  const dot = name.lastIndexOf('.');
+  const ext = dot > -1 ? name.slice(dot).toLowerCase().replace(/[^.a-z0-9]/g,'') : '';
+  const base = (dot > -1 ? name.slice(0, dot) : name).replace(/[^\w\-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40) || 'image';
+  return base + (ext || '.jpg');
+}
+async function compressImage(file, opts){
+  const { maxDim = 2000, quality = 0.88, minBytes = 400*1024 } = opts || {};
+  try{
+    if(!file || !file.type || !file.type.startsWith('image/')) return file;
+    if(file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+    if(file.size < minBytes) return file;
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale)), h = Math.max(1, Math.round(bmp.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    if(bmp.close) bmp.close();
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+    if(!blob || blob.size >= file.size) return file;
+    return new File([blob], safeFileName(file.name).replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
+  }catch(e){ return file; }
+}
 
 async function checkSession(){
   const { data:{session} } = await sb.auth.getSession();
@@ -490,9 +517,10 @@ function wireAddForm(){
     const title = $('#aTitle').value.trim();
     if(!title){ msg.innerHTML = '<div class="msg err"><i class="ph ph-warning-circle"></i> أدخل عنواناً</div>'; return; }
     let image_url = null;
-    const img = $('#aImage').files[0];
+    let img = $('#aImage').files[0];
     if(img){
-      const path = `admin/${Date.now()}-${img.name}`;
+      img = await compressImage(img, { maxDim: 2000, quality: 0.88 });
+      const path = `admin/${Date.now()}-${safeFileName(img.name)}`;
       const { error: upErr } = await sb.storage.from('content-media').upload(path, img);
       if(upErr){ msg.innerHTML = `<div class="msg err"><i class="ph ph-warning-circle"></i> ${esc(upErr.message)}</div>`; return; }
       image_url = sb.storage.from('content-media').getPublicUrl(path).data.publicUrl;
