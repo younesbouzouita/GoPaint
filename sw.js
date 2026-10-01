@@ -38,7 +38,7 @@ self.addEventListener('push', (e) => {
     badge: 'icon-192.png',
     dir: 'rtl',
     lang: 'ar',
-    data: { content_id: data.content_id || null, type: data.type || null }
+    data: { content_id: data.content_id || null, type: data.type || null, url: data.url || null }
   };
   if (groupable && data.content_id) { options.tag = data.type + ':' + data.content_id; options.renotify = true; }
   e.waitUntil(self.registration.showNotification(data.title || 'GO Paint', options));
@@ -47,6 +47,10 @@ self.addEventListener('push', (e) => {
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
   const d = e.notification.data || {};
+  if (d.url) {
+    e.waitUntil(self.clients.openWindow(d.url));
+    return;
+  }
   const target = new URL(self.registration.scope);
   if (d.content_id) target.searchParams.set('open', d.content_id);
   e.waitUntil((async () => {
