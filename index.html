@@ -1870,24 +1870,18 @@ $('#submitItemBtn').addEventListener('click', async ()=>{
   if(!onboard) return;
   let seen = false;
   try{ seen = !!localStorage.getItem('gp_onboarded'); }catch(e){}
-  if(!seen){
-    // Extra safety: if the browser already has a valid logged-in session
-    // (e.g. localStorage was cleared but Supabase session persists, or the
-    // person is opening the app on the same device after a prior login),
-    // never show onboarding again.
-    try{
-      const { data:{ session } } = await sb.auth.getSession();
-      if(session){
-        seen = true;
-        try{ localStorage.setItem('gp_onboarded', '1'); }catch(e){}
-      }
-    }catch(e){}
-  }
   if(seen){ onboard.remove(); startSplashSequence(); return; }
+
+  // Wire up every button FIRST, synchronously, so the screen is interactive
+  // immediately no matter what — a slow or hanging network call must never be
+  // able to leave the person stuck looking at an unresponsive welcome screen.
   const step1 = document.getElementById('onboardStep1');
   const step2 = document.getElementById('onboardStep2');
   const grid = document.getElementById('onboardGrid');
+  let finished = false;
   function finishOnboarding(){
+    if(finished) return;
+    finished = true;
     try{ localStorage.setItem('gp_onboarded', '1'); }catch(e){}
     onboard.classList.add('hide');
     setTimeout(()=>{ if(onboard.parentNode) onboard.remove(); }, 500);
@@ -1916,6 +1910,23 @@ $('#submitItemBtn').addEventListener('click', async ()=>{
   });
   const guestBtn = document.getElementById('onboardGuestBtn');
   if(guestBtn) guestBtn.addEventListener('click', finishOnboarding);
+
+  // Secondary, non-blocking check: if this browser already has a valid logged-in
+  // session, skip the welcome screen automatically. Raced against a timeout so a
+  // slow/stuck network call can never delay or freeze the UI above.
+  try{
+    const result = await Promise.race([
+      sb.auth.getSession(),
+      new Promise(resolve => setTimeout(()=>resolve(null), 2500))
+    ]);
+    const session = result && result.data && result.data.session;
+    if(session && !finished){
+      finished = true;
+      try{ localStorage.setItem('gp_onboarded', '1'); }catch(e){}
+      onboard.remove();
+      startSplashSequence();
+    }
+  }catch(e){}
 })();
 
 /* ---------------- SPLASH INTRO ANIMATION (canvas frame sequence, transparent, autoplay) ---------------- */
