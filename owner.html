@@ -704,12 +704,24 @@ async function wireAssetsForm(){
 }
 
 (function gateCheck(){
-  let gated = false;
-  try{ gated = sessionStorage.getItem('gp_owner_gate') !== '1'; }catch(e){ gated = false; }
-  if(gated){
+  // The gate token travels in the URL itself (set by index.html's "وضع التحكم" link).
+  // This is reliable across all browsers/tabs, unlike sessionStorage which does not
+  // consistently carry over to a new tab opened via target="_blank" on every browser.
+  // Once passed, it's also remembered in sessionStorage so reloading this same tab
+  // keeps working even after the URL is cleaned up below.
+  const params = new URLSearchParams(location.search);
+  const viaUrl = params.get('gate') === '1';
+  let viaSession = false;
+  try{ viaSession = sessionStorage.getItem('gp_owner_gate') === '1'; }catch(e){}
+
+  if(!viaUrl && !viaSession){
     document.getElementById('gateArea').style.display = 'block';
     document.getElementById('loginArea').style.display = 'none';
     return;
+  }
+  if(viaUrl){
+    try{ sessionStorage.setItem('gp_owner_gate', '1'); }catch(e){}
+    if(history.replaceState) history.replaceState(null, '', location.pathname);
   }
   checkSession();
 })();

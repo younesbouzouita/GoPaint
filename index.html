@@ -1026,12 +1026,8 @@ function renderOwnerPanel(p){
       <i class="ph-fill ph-crown-simple" style="font-size:42px;color:#FF8A3D;filter:drop-shadow(0 0 8px rgba(255,138,61,.5));"></i>
       <h3 style="margin:12px 0 6px;">${arabic?'وضع التحكم':'Control mode'}</h3>
       <p class="sub" style="margin:0 0 20px;">${arabic?'أنت مسجّل دخولك كمالك للتطبيق. افتح لوحة owner لإدارة المنشورات، البلاغات، والمستخدمين.':'You are signed in as the app owner. Open the owner panel to manage posts, reports, and users.'}</p>
-      <a href="owner.html" target="_blank" id="ownerPanelLink" class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;text-decoration:none;"><i class="ph ph-arrow-square-out"></i> ${arabic?'فتح لوحة owner':'Open owner panel'}</a>
+      <a href="owner.html?gate=1" target="_blank" id="ownerPanelLink" class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;text-decoration:none;"><i class="ph ph-arrow-square-out"></i> ${arabic?'فتح لوحة owner':'Open owner panel'}</a>
     </div>`;
-  const link = document.getElementById('ownerPanelLink');
-  if(link) link.addEventListener('click', ()=>{
-    try{ sessionStorage.setItem('gp_owner_gate', '1'); }catch(e){}
-  });
 }
 function updateOwnerSettingsTab(){
   const tabs = $('#settingsTabs');
